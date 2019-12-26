@@ -1,0 +1,35 @@
+{
+    "name": "codexshaper/database-backup-restore",
+    "description": "Database Backup and Restore",
+    "keywords": [
+        "databse",
+        "databse-backup",
+        "databse-restore",
+        "dumper",
+        "mysql",
+        "pgsql",
+        "sqlite",
+        "mongodb"
+    ],
+    "type": "library",
+    "license": "MIT",
+    "homepage": "https://github.com/Codexshaper/database-backup-restore",
+    "authors": [
+        {
+            "name": "Md Abu Ahsan Basir",
+            "email": "maab.career@gmail.com",
+            "homepage": "https://github.com/maab16",
+            "role": "Owner and Developer"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php" : "^7.2",
+        "symfony/process": "^4.2|^5.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "CodexShaper\\Dumper\\": "src/"
+        }
+    }
+}
