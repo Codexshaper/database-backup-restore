@@ -20,7 +20,7 @@ class SqliteDumper extends Dumper
         $this->run($command);
     }
 
-    public function prepareDumpCommand(string $destinationPath): string
+    protected function prepareDumpCommand(string $destinationPath): string
     {
         $databaseArg = escapeshellarg($this->dbName);
 
@@ -38,7 +38,7 @@ class SqliteDumper extends Dumper
         return "{$dumpCommand} > {$destinationPath}";
     }
 
-    public function prepareRestoreCommand(string $filePath): string
+    protected function prepareRestoreCommand(string $filePath): string
     {
         $database = escapeshellarg($this->dbName);
 
