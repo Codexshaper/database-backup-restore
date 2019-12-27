@@ -1,7 +1,7 @@
 # database-backup-restore
 Database Backup &amp; Restore
 
-# MySql Dump
+# MySql Dump *(Note: Mustbe installed `mysqldump` in your system)*
 ```
 $options    = [
     'host'            => 'HOST',
@@ -9,7 +9,7 @@ $options    = [
     'dbName'          => 'DATABASE_NAME',
     'username'        => 'DATABASE_USERNAME',
     'password'        => 'DATABASE_PASSWORD',
-    'destinationPath' => 'STORAGE_PATH_WITH_FILE_NAME', // /path/to/backups/mongodb/dump
+    'destinationPath' => 'STORAGE_PATH_WITH_FILE_NAME', // /path/to/backups/mysql/dump
 ];
 ```
 Use constructor with options
@@ -41,7 +41,8 @@ Archive
   ->dump();
 ```
 
-# MySql Restore
+# MySql Restore *(Note: Mustbe installed `mysql` in your system)*
+
 Restore from without archive
 ```
 $dumper = new \CodexShaper\Dumper\Drivers\MysqlDumper($options);
@@ -57,7 +58,63 @@ Restore from archive
   ->restore();
 ```
 
-# Sqlite Dump
+# PgSql Dump *(Note: Mustbe installed `pg_dump` in your system)*
+```
+$options    = [
+    'host'            => 'HOST',
+    'port'            => 'PORT',
+    'dbName'          => 'DATABASE_NAME',
+    'username'        => 'DATABASE_USERNAME',
+    'password'        => 'DATABASE_PASSWORD',
+    'destinationPath' => 'STORAGE_PATH_WITH_FILE_NAME', // /path/to/backups/pgsql/dump
+];
+```
+Use constructor with options
+```
+$dumper = new \CodexShaper\Dumper\Drivers\PgsqlDumper($options);
+$dumper->dump();
+```
+Use create method
+```
+\CodexShaper\Dumper\Drivers\PgsqlDumper::create($options)->dump();
+```
+
+Dynamically
+```
+\CodexShaper\Dumper\Drivers\PgsqlDumper::create()
+  ->setHost($host)
+  ->setPort($port)
+  ->setDbName($database)
+  ->setUserName($username)
+  ->setPassword($password)
+  ->setDestinationPath($destinationPath)
+  ->dump();
+```
+
+Archive
+```
+\CodexShaper\Dumper\Drivers\PgsqlDumper::create($options)
+  ->useCompress("gzip") // This command apply gzip to zip
+  ->dump();
+```
+
+# PgSql Restore *(Note: Mustbe installed `psql` in your system)*
+Restore from without archive
+```
+$dumper = new \CodexShaper\Dumper\Drivers\PgsqlDumper($options);
+$dumper->setRestorePath($restorePath); // /path/to/backups/pgsql/dump.sql 
+$dumper->restore();
+```
+
+Restore from archive
+```
+\CodexShaper\Dumper\Drivers\PgsqlDumper::create($options)
+  ->useCompress("gunzip") // this command unzip the file
+  ->setRestorePath($restorePath) // /path/to/backups/pgsql/dump.sql.gz
+  ->restore();
+```
+
+# Sqlite Dump *(Note: Mustbe installed `sqlite3` in your system)*
 ```
 $options    = [
     'dbName'          => 'DATABASE_PATH', // /path/to/database.sqlite
@@ -89,7 +146,7 @@ Archive
   ->useCompress("gzip") // This command apply gzip to zip
   ->dump();
 ```
-# Sqlite Restore
+# Sqlite Restore *(Note: Mustbe installed `sqlite3` in your system)*
 ```
 $options    = [
     'dbName'          => 'DATABASE_PATH', // /path/to/database.sqlite
@@ -116,7 +173,7 @@ Restore From Archive
   ->restore();
 ```
 
-# MongoDB Dump
+# MongoDB Dump *(Note: Mustbe installed `mongodump` in your system)*
 
 ```
 $options    = [
@@ -187,7 +244,7 @@ Compress
   ->dump();
 ```
 
-# MongoDB Restore
+# MongoDB Restore *(Note: Mustbe installed `mongorestore` in your system)*
 
 Restore from without archive
 ```
@@ -218,3 +275,12 @@ Restore from archive using URI
   ->setRestorePath($restorePath)
   ->restore();
 ```
+
+# Set Dump Binary Path
+```
+\CodexShaper\Dumper\Drivers\MysqlDumper::create($options)
+  ->setDumpCommandPath($binaryPath) // /path/to/mysql/bin
+  ->dump();
+```
+
+Same for other driver
