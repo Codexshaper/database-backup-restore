@@ -1,6 +1,11 @@
 # database-backup-restore
 Database Backup &amp; Restore
 
+# Installation
+```
+composer require codexshaper/database-backup-restore
+```
+
 # MySql Dump *(Note: Mustbe installed `mysqldump` in your system)*
 ```
 $options    = [
@@ -279,9 +284,21 @@ Restore from archive using URI
 
 # Set Dump Binary Path
 ```
+// Same for other driver
 \CodexShaper\Dumper\Drivers\MysqlDumper::create($options)
   ->setDumpCommandPath($binaryPath) // /path/to/mysql/bin
   ->dump();
 ```
 
-Same for other driver
+
+
+## Authors
+
+* **Md Abu Ahsan Basir** - [github](https://github.com/maab16)
+
+## License
+
+[![License](http://img.shields.io/:license-mit-blue.svg?style=flat-square)](http://badges.mit-license.org)
+
+- **[MIT license](http://opensource.org/licenses/mit-license.php)**
+- Copyright 2019 © <a href="https://github.com/Codexshaper/database-backup-restore/blob/master/LICENSE" target="_blank">CodexShaper</a>.
