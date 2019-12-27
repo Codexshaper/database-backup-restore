@@ -54,7 +54,6 @@ $dumper->restore();
 ```
 Or
 ```
-```
 \CodexShaper\Dumper\Drivers\SqliteDumper::create($options)
   ->setHost($host)
   ->setPort($port)
@@ -62,5 +61,4 @@ Or
   ->setUserName($username)
   ->setPassword($password)
   ->restore($restorePath);
-```
 ```
