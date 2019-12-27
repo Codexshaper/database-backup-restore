@@ -50,7 +50,14 @@ OR
   ->setDestinationPath($destinationPath)
   ->dump()
 ```
-Archive
+Dynamic
+```
+\CodexShaper\Dumper\Drivers\MongoDumper::create()
+  ->setUri($uri)
+  ->setDestinationPath($destinationPath)
+  ->dump()
+```
+Compress
 ```
 \CodexShaper\Dumper\Drivers\MongoDumper::create(['uri' => $uri])
   ->useCompress("gzip")
@@ -66,14 +73,14 @@ Archive
 
 # MongoDB Restore
 
-## Restore from without archive
+Restore from without archive
 ```
 $dumper = new \CodexShaper\Dumper\Drivers\MongoDumper($options);
 $dumper->setRestorePath($restorePath); // /path/to/backups/mongodb/dump 
 $dumper->restore();
 ```
 
-## Use URI
+Use URI
 
 ```
 \CodexShaper\Dumper\Drivers\MongoDumper::create(['uri' => $uri])
@@ -81,14 +88,14 @@ $dumper->restore();
     ->restore();
 ```
 
-## Restore from archive
+Restore from archive
 ```
 \CodexShaper\Dumper\Drivers\MongoDumper::create($options)
   ->useCompress("gzip")
   ->setRestorePath($restorePath) // /path/to/backups/mongodb/dump.gz
   ->restore();
 ```
-## Restore from archive using URI
+Restore from archive using URI
 ```
 \CodexShaper\Dumper\Drivers\MongoDumper::create(['uri' => $uri])
   ->useCompress("gzip")
