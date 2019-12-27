@@ -153,11 +153,12 @@ $options    = [
     'restorePath' => 'RESTORE_PATH_WITH_FILE_NAME', // /path/to/backups/sqlite/dump.sql
 ];
 ```
+Use Construct
 ```
 $dumper = new \CodexShaper\Dumper\Drivers\SqliteDumper($options);
 $dumper->restore();
 ```
-Or
+Use Dynamic
 ```
 \CodexShaper\Dumper\Drivers\SqliteDumper::create()
   ->setDbName($database)
