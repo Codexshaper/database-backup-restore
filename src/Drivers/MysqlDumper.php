@@ -3,7 +3,6 @@
 namespace CodexShaper\Dumper\Drivers;
 
 use CodexShaper\Dumper\Dumper;
-use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class MysqlDumper extends Dumper
 {
@@ -45,9 +44,9 @@ class MysqlDumper extends Dumper
         $this->createTables = false;
         return $this;
     }
-    public function setDefaultCharacterSet(string $charecterSet)
+    public function setDefaultCharacterSe(string $charecterSet)
     {
-        $this->defaultCharacterSet = $charecterSet;
+        $this->defaultCharacterSe = $charecterSet;
         return $this;
     }
 
@@ -65,57 +64,26 @@ class MysqlDumper extends Dumper
         return $this;
     }
 
-    public function getDumpOptions(string $credentialFile)
-    {
-        $options = [
-            "{$this->dumpCommandPath}mysqldump",
-            "--defaults-extra-file={$credentialFile}",
-        ];
-
-        if ($this->dbName) {
-            $options['database'] = $this->dbName;
-        }
-        if ($this->socket) {
-            $options['socket'] = "--socket={$this->socket}";
-        }
-        if ($this->skipComments) {
-            $options['skipComments'] = '--skip-comments';
-        }
-        if (!$this->createTables) {
-            $options['createTables'] = '--no-create-info';
-        }
-        if ($this->singleTransaction) {
-            $options['singleTransaction'] = '--single-transaction';
-        }
-
-        if ($this->skipLockTables) {
-            $options['skipLockTables'] = '--skip-lock-tables';
-        }
-
-        if ($this->quick) {
-            $options['quick'] = '--quick';
-        }
-        if ($this->defaultCharacterSet) {
-            $options['defaultCharacterSet'] = '--default-character-set=' . $this->defaultCharacterSet;
-        }
-        if (count($this->tables) > 0) {
-            $options['tables'] = '--tables ' . implode(' ', $this->tables);
-        }
-        // Ignore Tables
-        $ignoreTables = [];
-        foreach ($this->ignoreTables as $tableName) {
-            $ignoreTables[]          = "--ignore-table=" . $databaseArg . "." . $tableName;
-            $options['ignoreTables'] = implode(' ', $ignoreTables);
-        }
-        return $options;
-    }
-
     protected function prepareDumpCommand(string $credentialFile, string $destinationPath): string
     {
-        // Dump command
-        $dumpCommand = implode(' ', $this->getDumpOptions($credentialFile));
-        // Add compressor if compress is enable
+        $dumpCommand = sprintf(
+            '%smysqldump %s %s %s %s %s %s %s %s %s %s %s',
+            $this->dumpCommandPath,
+            $this->prepareAuthentication($credentialFile),
+            $this->prepareDatabase(),
+            $this->prepareSocket(),
+            $this->prepareSkipComments(),
+            $this->prepareCreateTables(),
+            $this->prepareSingleTransaction(),
+            $this->prepareSkipLockTables(),
+            $this->prepareQuick(),
+            $this->prepareDefaultCharSet(),
+            $this->prepareIncludeTables(),
+            $this->prepareIgnoreTables()
+        );
+
         if ($this->isCompress) {
+
             return "{$dumpCommand} | {$this->compressBinaryPath}{$this->compressCommand} > {$destinationPath}{$this->compressExtension}";
         }
 
@@ -124,18 +92,14 @@ class MysqlDumper extends Dumper
 
     protected function prepareRestoreCommand(string $credentialFile, string $filePath): string
     {
-        // Database
-        $database = $this->dbName;
-        // Authentication File
-        $authenticate = "--defaults-extra-file=" . $credentialFile;
-        // Restore command
         $restoreCommand = sprintf("%smysql %s %s",
             $this->dumpCommandPath,
-            $authenticate,
-            $database
+            $this->prepareAuthentication($credentialFile),
+            $this->prepareDatabase()
         );
-        // Add compressor if compress is enable
+
         if ($this->isCompress) {
+
             return "{$this->compressBinaryPath}{$this->compressCommand} < {$filePath} | {$restoreCommand}";
         }
 
@@ -145,21 +109,20 @@ class MysqlDumper extends Dumper
     protected function runCommand($filePath, $action)
     {
         try {
-            // Get Credentials
-            $credentials = $this->getCredentials();
-            // Create a temporary file
+
+            $credentials    = $this->getCredentials();
             $this->tempFile = tempnam(sys_get_temp_dir(), 'mysqlpass');
-            // Create file handler
-            $handler = fopen($this->tempFile, 'r+');
-            // Write credentials into temporary file
+            $handler        = fopen($this->tempFile, 'r+');
             fwrite($handler, $credentials);
 
             if ($action == 'dump') {
                 $this->command = preg_replace('/\s+/', ' ', $this->prepareDumpCommand($this->tempFile, $filePath));
-            } else if ($action == 'restore') {
+            }
+
+            if ($action == 'restore') {
                 $this->command = preg_replace('/\s+/', ' ', $this->prepareRestoreCommand($this->tempFile, $filePath));
             }
-            // Get Symfony process with prepared command
+
             $process = $this->prepareProcessCommand();
 
             if ($this->debug) {
@@ -167,9 +130,8 @@ class MysqlDumper extends Dumper
             } else {
                 $process->run();
             }
-            // close handler
+
             fclose($handler);
-            // Remove temporary
             unlink($this->tempFile);
 
         } catch (ProcessFailedException $e) {
@@ -188,5 +150,67 @@ class MysqlDumper extends Dumper
             "port = '{$this->port}'",
         ];
         return implode(PHP_EOL, $contents);
+    }
+
+    public function prepareDatabase()
+    {
+        return $this->dbName;
+    }
+
+    public function prepareIncludeTables()
+    {
+        $includeTables    = (count($this->tables) > 0) ? implode(' ', $this->tables) : "";
+        $includeTablesArg = !empty($includeTables) ? '--tables ' . $includeTables : '';
+        return $includeTablesArg;
+    }
+
+    public function prepareIgnoreTables()
+    {
+        $ignoreTablesArgs = [];
+        foreach ($this->ignoreTables as $tableName) {
+            $ignoreTablesArgs[] = "--ignore-table=" . $databaseArg . "." . $tableName;
+        }
+        $ignoreTablesArg = (count($ignoreTablesArgs) > 0) ? implode(' ', $ignoreTablesArgs) : '';
+        return $ignoreTablesArg;
+    }
+
+    public function prepareSingleTransaction()
+    {
+        return $this->singleTransaction ? "--single-transaction" : "";
+    }
+
+    public function prepareSkipLockTables()
+    {
+        return $this->skipLockTables ? "--skip-lock-tables" : "";
+    }
+
+    public function prepareQuick()
+    {
+        return $this->quick ? "--quick" : "";
+    }
+
+    public function prepareCreateTables()
+    {
+        return !$this->createTables ? '--no-create-info' : '';
+    }
+
+    public function prepareSkipComments()
+    {
+        return $this->skipComments ? '--skip-comments' : '';
+    }
+
+    public function prepareSocket()
+    {
+        return ($this->socket !== '') ? "--socket={$this->socket}" : '';
+    }
+
+    public function prepareDefaultCharSet()
+    {
+        return ($this->defaultCharacterSet !== '') ? "--default-character-set={$this->defaultCharacterSet}" : '';
+    }
+
+    public function prepareAuthentication(string $credentialFile)
+    {
+        return "--defaults-extra-file={$credentialFile}";
     }
 }
