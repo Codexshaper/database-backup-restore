@@ -3,6 +3,7 @@
 namespace CodexShaper\Dumper\Drivers;
 
 use CodexShaper\Dumper\Dumper;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class MysqlDumper extends Dumper
 {
@@ -44,9 +45,9 @@ class MysqlDumper extends Dumper
         $this->createTables = false;
         return $this;
     }
-    public function setDefaultCharacterSe(string $charecterSet)
+    public function setDefaultCharacterSet(string $charecterSet)
     {
-        $this->defaultCharacterSe = $charecterSet;
+        $this->defaultCharacterSet = $charecterSet;
         return $this;
     }
 
@@ -140,20 +141,21 @@ class MysqlDumper extends Dumper
     protected function runCommand($filePath, $action)
     {
         try {
-
-            $credentials    = $this->getCredentials();
+            // Get Credentials
+            $credentials = $this->getCredentials();
+            // Create a temporary file
             $this->tempFile = tempnam(sys_get_temp_dir(), 'mysqlpass');
-            $handler        = fopen($this->tempFile, 'r+');
+            // Create file handler
+            $handler = fopen($this->tempFile, 'r+');
+            // Write credentials into temporary file
             fwrite($handler, $credentials);
 
             if ($action == 'dump') {
                 $this->command = preg_replace('/\s+/', ' ', $this->prepareDumpCommand($this->tempFile, $filePath));
-            }
-
-            if ($action == 'restore') {
+            } else if ($action == 'restore') {
                 $this->command = preg_replace('/\s+/', ' ', $this->prepareRestoreCommand($this->tempFile, $filePath));
             }
-
+            // Get Symfony process with prepared command
             $process = $this->prepareProcessCommand();
 
             if ($this->debug) {
@@ -161,8 +163,9 @@ class MysqlDumper extends Dumper
             } else {
                 $process->run();
             }
-
+            // close handler
             fclose($handler);
+            // Remove temporary file
             unlink($this->tempFile);
 
         } catch (ProcessFailedException $e) {

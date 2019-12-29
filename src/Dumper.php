@@ -4,6 +4,7 @@ namespace CodexShaper\Dumper;
 
 use CodexShaper\Dumper\Contracts\Dumper as DumperContract;
 use CodexShaper\Dumper\Traits\DumperTrait;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
 abstract class Dumper implements DumperContract
