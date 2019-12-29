@@ -67,39 +67,39 @@ class MysqlDumper extends Dumper
 
     protected function prepareDumpCommand(string $credentialFile, string $destinationPath): string
     {
-        $command = "{$this->dumpCommandPath}mysqldump --defaults-extra-file={$credentialFile} ";
+        $command = "{$this->dumpCommandPath}mysqldump --defaults-extra-file={$credentialFile}";
 
         if (!empty($this->dbName)) {
-            $command .= $this->dbName . " ";
+            $command .= " " . $this->dbName;
         }
         if ($this->socket !== '') {
-            $command .= "--socket={$this->socket} ";
+            $command .= " --socket={$this->socket}";
         }
         if ($this->skipComments) {
-            $command .= '--skip-comments ';
+            $command .= ' --skip-comments';
         }
         if (!$this->createTables) {
-            $command .= '--no-create-info ';
+            $command .= ' --no-create-info';
         }
         if ($this->singleTransaction) {
-            $command .= '--single-transaction ';
+            $command .= ' --single-transaction';
         }
         if ($this->skipLockTables) {
-            $command .= '--skip-lock-tables ';
+            $command .= ' --skip-lock-tables';
         }
         if ($this->quick) {
-            $command .= '--quick ';
+            $command .= ' --quick';
         }
         if ($this->defaultCharacterSet) {
-            $command .= "--default-character-set={$this->defaultCharacterSet} ";
+            $command .= " --default-character-set={$this->defaultCharacterSet}";
         }
         if (count($this->tables) > 0) {
             $includetables = implode(' ', $this->tables);
-            $command .= "--tables {$includetables} ";
+            $command .= " --tables {$includetables}";
         }
         // Ignore Tables
         foreach ($this->ignoreTables as $tableName) {
-            $command .= "--ignore-table={$this->dbName}.{$tableName} ";
+            $command .= " --ignore-table={$this->dbName}.{$tableName}";
         }
         // Add compressor if compress is enable
         if ($this->isCompress) {

@@ -48,49 +48,56 @@ class MongoDumper extends Dumper
 
     protected function prepareDumpCommand(string $destinationPath): string
     {
-        $command = "{$this->dumpCommandPath}mongodump ";
-
-        if ($this->isCompress) {
-            $command .= "--archive --gzip ";
-        }
-
-        if ($this->uri) {
-            $command .= $this->uri;
-        }
-        // Database
-        if ($this->dbName && !$this->uri) {
-            $command .= "--db {$this->dbName} ";
-        }
-        // Username
-        if ($this->username && !$this->uri) {
-            $command .= "--username {$this->username} ";
-        }
-        //Password
-        if ($this->password && !$this->uri) {
-            $command .= "--password {$this->password} ";
-        }
-        // Host
-        if ($this->host && !$this->uri) {
-            $command .= "--host {$this->host} ";
-        }
-        // Port
-        if ($this->port && !$this->uri) {
-            $command .= "--port {$this->port} ";
-        }
-        // Collection
-        if ($this->collection) {
-            $command .= "--collection {$this->collection} ";
-        }
-        // Authentication Database
-        if ($this->authenticationDatabase && !$this->uri) {
-            $command .= "--authenticationDatabase {$this->authenticationDatabase}";
-        }
+        $command = $this->prepareDumpOptions();
 
         if ($this->isCompress) {
             return "{$command} > {$destinationPath}{$this->compressExtension}";
         }
 
         return "{$command} --out {$destinationPath}";
+    }
+
+    protected function prepareDumpOptions()
+    {
+        $command = "{$this->dumpCommandPath}mongodump";
+
+        if ($this->isCompress) {
+            $command .= " --archive --gzip";
+        }
+
+        if ($this->uri) {
+            $command .= " " . $this->uri;
+        }
+        // Database
+        if ($this->dbName && !$this->uri) {
+            $command .= " --db {$this->dbName}";
+        }
+        // Username
+        if ($this->username && !$this->uri) {
+            $command .= " --username {$this->username}";
+        }
+        //Password
+        if ($this->password && !$this->uri) {
+            $command .= " --password {$this->password}";
+        }
+        // Host
+        if ($this->host && !$this->uri) {
+            $command .= " --host {$this->host}";
+        }
+        // Port
+        if ($this->port && !$this->uri) {
+            $command .= " --port {$this->port}";
+        }
+        // Collection
+        if ($this->collection) {
+            $command .= " --collection {$this->collection}";
+        }
+        // Authentication Database
+        if ($this->authenticationDatabase && !$this->uri) {
+            $command .= " --authenticationDatabase {$this->authenticationDatabase}";
+        }
+
+        return $command;
     }
 
     protected function prepareRestoreCommand(string $filePath): string
