@@ -68,25 +68,24 @@ class MysqlDumper extends Dumper
     protected function prepareDumpCommand(string $credentialFile, string $destinationPath): string
     {
         $options = [
-            'tables'              => '',
-            'ignoreTables'        => '',
-            'singleTransaction'   => '',
-            'skipLockTables'      => '',
-            'quick'               => '',
-            'createTables'        => '',
-            'skipComments'        => '',
-            'socket'              => '',
-            'defaultCharacterSet' => '',
+            "command"     => "{$this->dumpCommandPath}mysqldump",
+            "credentials" => "--defaults-extra-file={$credentialFile}",
         ];
 
-        if (count($this->tables) > 0) {
-            $options['tables'] = '--tables ' . implode(' ', $this->tables);
+        if (!empty($this->dbName)) {
+            $options['database'] = $this->dbName;
         }
-        // Ignore Tables
-        $ignoreTables = [];
-        foreach ($this->ignoreTables as $tableName) {
-            $ignoreTables[]          = "--ignore-table={$this->dbName}.{$tableName}";
-            $options['ignoreTables'] = implode(' ', $ignoreTables);
+
+        if ($this->socket !== '') {
+            $options['socket'] = "--socket={$this->socket}";
+        }
+
+        if ($this->skipComments) {
+            $options['skipComments'] = '--skip-comments';
+        }
+
+        if (!$this->createTables) {
+            $options['createTables'] = '--no-create-info';
         }
 
         if ($this->singleTransaction) {
@@ -101,40 +100,22 @@ class MysqlDumper extends Dumper
             $options['quick'] = '--quick';
         }
 
-        if (!$this->createTables) {
-            $options['createTables'] = '--no-create-info';
-        }
-
-        if ($this->skipComments) {
-            $options['skipComments'] = '--skip-comments';
-        }
-
-        if ($this->socket !== '') {
-            $options['socket'] = "--socket={$this->socket}";
-        }
-
         if ($this->defaultCharacterSet) {
             $options['defaultCharacterSet'] = '--default-character-set=' . $this->defaultCharacterSet;
         }
 
-        $options['authenticate'] = "--defaults-extra-file={$credentialFile}";
+        if (count($this->tables) > 0) {
+            $options['tables'] = '--tables ' . implode(' ', $this->tables);
+        }
+        // Ignore Tables
+        $ignoreTables = [];
+        foreach ($this->ignoreTables as $tableName) {
+            $ignoreTables[]          = "--ignore-table={$this->dbName}.{$tableName}";
+            $options['ignoreTables'] = implode(' ', $ignoreTables);
+        }
 
         // Dump command
-        $dumpCommand = sprintf(
-            '%smysqldump %s %s %s %s %s %s %s %s %s %s %s',
-            $this->dumpCommandPath,
-            $options['authenticate'],
-            $this->dbName,
-            $options['socket'],
-            $options['skipComments'],
-            $options['createTables'],
-            $options['singleTransaction'],
-            $options['skipLockTables'],
-            $options['quick'],
-            $options['defaultCharacterSet'],
-            $options['tables'],
-            $options['ignoreTables']
-        );
+        $dumpCommand = implode(' ', $options);
         // Add compressor if compress is enable
         if ($this->isCompress) {
             return "{$dumpCommand} | {$this->compressBinaryPath}{$this->compressCommand} > {$destinationPath}{$this->compressExtension}";
