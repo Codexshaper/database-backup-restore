@@ -3,6 +3,7 @@
 namespace CodexShaper\Dumper\Drivers;
 
 use CodexShaper\Dumper\Dumper;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class MysqlDumper extends Dumper
 {
@@ -44,9 +45,9 @@ class MysqlDumper extends Dumper
         $this->createTables = false;
         return $this;
     }
-    public function setDefaultCharacterSe(string $charecterSet)
+    public function setDefaultCharacterSet(string $charecterSet)
     {
-        $this->defaultCharacterSe = $charecterSet;
+        $this->defaultCharacterSet = $charecterSet;
         return $this;
     }
 
@@ -168,7 +169,7 @@ class MysqlDumper extends Dumper
     {
         $ignoreTablesArgs = [];
         foreach ($this->ignoreTables as $tableName) {
-            $ignoreTablesArgs[] = "--ignore-table=" . $databaseArg . "." . $tableName;
+            $ignoreTablesArgs[] = "--ignore-table={$databaseArg}.{$tableName}";
         }
         $ignoreTablesArg = (count($ignoreTablesArgs) > 0) ? implode(' ', $ignoreTablesArgs) : '';
         return $ignoreTablesArg;
