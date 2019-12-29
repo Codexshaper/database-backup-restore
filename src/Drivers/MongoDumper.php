@@ -48,26 +48,47 @@ class MongoDumper extends Dumper
 
     protected function prepareDumpCommand(string $destinationPath): string
     {
+        $options = [
+            'archive' => '',
+            'database' => '',
+            'username' => '',
+            'password' => '',
+            'host' => '',
+            'port' => '',
+            'collection' => '',
+            'authenticationDatabase' => '',
+        ];
         // Database
-        $databaseArg = !empty($this->dbName) ? "--db " . escapeshellarg($this->dbName) : "";
+        if(!empty($this->dbName)) {
+            $options['database'] = "--db {$this->dbName}";
+        }
         // Username
-        $username = !empty($this->username) ? "--username " . escapeshellarg($this->username) : "";
+        if(!empty($this->username)) {
+            $options['username'] = "--username {$this->username}";
+        }
         //Password
-        $password = !empty($this->password) ? "--password " . escapeshellarg($this->password) : "";
+        if(!empty($this->password)) {
+            $options['password'] = "--password {$this->password}";
+        }
         // Host
-        $host = !empty($this->host) ? "--host " . escapeshellarg($this->host) : "";
+        if(!empty($this->host)) {
+           $options['host'] "--host {$this->host}";
+        }
         // Port
-        $port = !empty($this->port) ? "--port " . escapeshellarg($this->port) : "";
+        if(!empty($this->port)) {
+            $options['port'] = "--port {$this->port}";
+        }
         // Collection
-        $collection = !empty($this->collection) ? "--collection " . escapeshellarg($this->collection) : "";
+        if(!empty($this->collection)) {
+            $options['collection'] = "--collection {$this->collection}";
+        }
         // Authentication Database
-        $authenticationDatabase = !empty($this->authenticationDatabase) ? "--authenticationDatabase " . escapeshellarg($this->authenticationDatabase) : "";
+        if(!empty($this->authenticationDatabase)) {
+            $options[] = "--authenticationDatabase {$this->authenticationDatabase}";
+        } 
         // Archive
-        $archive = "";
-
         if ($this->isCompress) {
-
-            $archive = "--archive --gzip";
+            $options['archive'] = "--archive --gzip";
         }
         // Dump Command
         $dumpCommand = sprintf(

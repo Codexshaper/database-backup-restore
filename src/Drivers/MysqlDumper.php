@@ -67,7 +67,17 @@ class MysqlDumper extends Dumper
 
     protected function prepareDumpCommand(string $credentialFile, string $destinationPath): string
     {
-        $options = [];
+        $options = [
+            'tables'              => '',
+            'ignoreTables'        => '',
+            'singleTransaction'   => '',
+            'skipLockTables'      => '',
+            'quick'               => '',
+            'createTables'        => '',
+            'skipComments'        => '',
+            'socket'              => '',
+            'defaultCharacterSet' => '',
+        ];
 
         if (count($this->tables) > 0) {
             $options['tables'] = '--tables ' . implode(' ', $this->tables);
@@ -94,12 +104,15 @@ class MysqlDumper extends Dumper
         if (!$this->createTables) {
             $options['createTables'] = '--no-create-info';
         }
+
         if ($this->skipComments) {
             $options['skipComments'] = '--skip-comments';
         }
+
         if ($this->socket !== '') {
             $options['socket'] = "--socket={$this->socket}";
         }
+
         if ($this->defaultCharacterSet) {
             $options['defaultCharacterSet'] = '--default-character-set=' . $this->defaultCharacterSet;
         }
@@ -110,17 +123,17 @@ class MysqlDumper extends Dumper
         $dumpCommand = sprintf(
             '%smysqldump %s %s %s %s %s %s %s %s %s %s %s',
             $this->dumpCommandPath,
-            $options['authenticate'] ?? "",
+            $options['authenticate'],
             $this->dbName,
-            $options['socket'] ?? "",
-            $options['skipComments'] ?? "",
-            $options['createTables'] ?? "",
-            $options['singleTransaction'] ?? "",
-            $options['skipLockTables'] ?? "",
-            $options['quick'] ?? "",
-            $options['defaultCharacterSet'] ?? "",
-            $options['tables'] ?? "",
-            $options['ignoreTables'] ?? ""
+            $options['socket'],
+            $options['skipComments'],
+            $options['createTables'],
+            $options['singleTransaction'],
+            $options['skipLockTables'],
+            $options['quick'],
+            $options['defaultCharacterSet'],
+            $options['tables'],
+            $options['ignoreTables']
         );
         // Add compressor if compress is enable
         if ($this->isCompress) {
