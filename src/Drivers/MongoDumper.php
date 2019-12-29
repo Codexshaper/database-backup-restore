@@ -94,12 +94,9 @@ class MongoDumper extends Dumper
 
     protected function prepareRestoreCommand(string $filePath): string
     {
-        $databaseArg            = !empty($this->dbName) ? "--db " . escapeshellarg($this->dbName) : "";
         $username               = !empty($this->username) ? "--username " . escapeshellarg($this->username) : "";
-        $password               = !empty($this->password) ? "--password " . escapeshellarg($this->password) : "";
         $host                   = !empty($this->host) ? "--host " . escapeshellarg($this->host) : "";
         $port                   = !empty($this->port) ? "--port " . escapeshellarg($this->port) : "";
-        $collection             = !empty($this->collection) ? "--collection " . escapeshellarg($this->collection) : "";
         $authenticationDatabase = !empty($this->authenticationDatabase) ? "--authenticationDatabase " . escapeshellarg($this->authenticationDatabase) : "";
 
         $archive = "";
