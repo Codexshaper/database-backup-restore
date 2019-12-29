@@ -85,7 +85,7 @@ class MysqlDumper extends Dumper
         // Ignore Tables
         $ignoreTables = [];
         foreach ($this->ignoreTables as $tableName) {
-            $ignoreTables[]          = "--ignore-table=" . $databaseArg . "." . $tableName;
+            $ignoreTables[]          = "--ignore-table={$this->dbName}.{$tableName}";
             $options['ignoreTables'] = implode(' ', $ignoreTables);
         }
 
