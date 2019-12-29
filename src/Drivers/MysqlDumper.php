@@ -67,48 +67,60 @@ class MysqlDumper extends Dumper
 
     protected function prepareDumpCommand(string $credentialFile, string $destinationPath): string
     {
-        // Database
-        $databaseArg = $this->dbName;
-        // Include tables
-        $includeTables    = (count($this->tables) > 0) ? implode(' ', $this->tables) : "";
-        $includeTablesArg = !empty($includeTables) ? '--tables ' . $includeTables : '';
-        // Ignore Tables
-        $ignoreTablesArgs = [];
-        foreach ($this->ignoreTables as $tableName) {
-            $ignoreTablesArgs[] = "--ignore-table=" . $databaseArg . "." . $tableName;
+        $options = [];
+
+        if(count($this->tables) > 0) {
+            $options['tables'] = '--tables ' . implode(' ', $this->tables);
         }
-        $ignoreTablesArg = (count($ignoreTablesArgs) > 0) ? implode(' ', $ignoreTablesArgs) : '';
-        // Single Transaction
-        $singleTransaction = ($this->singleTransaction) ? "--single-transaction" : "";
-        // Skip Lock Table
-        $skipLockTable = ($this->skipLockTables) ? "--skip-lock-tables" : "";
-        // Quick
-        $quick = ($this->quick) ? "--quick" : "";
-        // Create Tables
-        $createTables = (!$this->createTables) ? '--no-create-info' : '';
-        // Skip Comments
-        $skipComments = ($this->skipComments) ? '--skip-comments' : '';
-        // Socket
-        $socket = ($this->socket !== '') ? "--socket={$this->socket}" : '';
-        // Default charecter set
-        $defaultCharacterSet = ($this->defaultCharacterSet !== '') ? '--default-character-set=' . $this->defaultCharacterSet : '';
-        // Authentication File
-        $authenticate = "--defaults-extra-file=" . $credentialFile;
+        // Ignore Tables
+        $ignoreTables = [];
+        foreach ($this->ignoreTables as $tableName) {
+            $ignoreTables[] = "--ignore-table=" . $databaseArg . "." . $tableName;
+            $options['ignoreTables'] = implode(' ', $ignoreTables);
+        }
+
+        if($this->singleTransaction) {
+            $options['singleTransaction'] => '--single-transaction';
+        }
+
+        if($this->skipLockTable) {
+            $options['skipLockTable'] => '--skip-lock-tables';
+        }
+
+        if($this->quick) {
+            $options['quick'] => '--quick';
+        }
+
+        if(!$this->createTables) {
+            $options['createTables'] => '--no-create-info';
+        }
+        if($this->skipComments) {
+            $options['skipComments'] => '--skip-comments';
+        }
+        if($this->socket !== '') {
+            $options['socket'] => "--socket={$this->socket}";
+        }
+        if($this->defaultCharacterSet) {
+            $options['defaultCharacterSet'] => '--default-character-set=' . $this->defaultCharacterSet;
+        }
+        if($this->authenticate) {
+            $options['authenticate'] => "--defaults-extra-file={$credentialFile}";
+        }
         // Dump command
         $dumpCommand = sprintf(
             '%smysqldump %s %s %s %s %s %s %s %s %s %s %s',
             $this->dumpCommandPath,
             $authenticate,
-            $databaseArg,
-            $socket,
-            $skipComments,
-            $createTables,
-            $singleTransaction,
-            $skipLockTable,
-            $quick,
-            $defaultCharacterSet,
-            $includeTablesArg,
-            $ignoreTablesArg
+            $this->dbName,
+            $options['socket'],
+            $options['skipComments'],
+            $options['createTables'],
+            $options['singleTransaction'],
+            $options['skipLockTable'],
+            $options['quick'],
+            $options['defaultCharacterSet'],
+            $options['tables'],
+            $options['ignoreTables']
         );
         // Add compressor if compress is enable
         if ($this->isCompress) {
