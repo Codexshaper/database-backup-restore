@@ -48,14 +48,22 @@ class MongoDumper extends Dumper
 
     protected function prepareDumpCommand(string $destinationPath): string
     {
-        $databaseArg            = !empty($this->dbName) ? "--db " . escapeshellarg($this->dbName) : "";
-        $username               = !empty($this->username) ? "--username " . escapeshellarg($this->username) : "";
-        $password               = !empty($this->password) ? "--password " . escapeshellarg($this->password) : "";
-        $host                   = !empty($this->host) ? "--host " . escapeshellarg($this->host) : "";
-        $port                   = !empty($this->port) ? "--port " . escapeshellarg($this->port) : "";
-        $collection             = !empty($this->collection) ? "--collection " . escapeshellarg($this->collection) : "";
+        // Database
+        $databaseArg = !empty($this->dbName) ? "--db " . escapeshellarg($this->dbName) : "";
+        // Username
+        $username = !empty($this->username) ? "--username " . escapeshellarg($this->username) : "";
+        //Password
+        $password = !empty($this->password) ? "--password " . escapeshellarg($this->password) : "";
+        // Host
+        $host = !empty($this->host) ? "--host " . escapeshellarg($this->host) : "";
+        // Port
+        $port = !empty($this->port) ? "--port " . escapeshellarg($this->port) : "";
+        // Collection
+        $collection = !empty($this->collection) ? "--collection " . escapeshellarg($this->collection) : "";
+        // Authentication Database
         $authenticationDatabase = !empty($this->authenticationDatabase) ? "--authenticationDatabase " . escapeshellarg($this->authenticationDatabase) : "";
-        $archive                = "";
+        // Archive
+        $archive = "";
 
         if ($this->isCompress) {
 

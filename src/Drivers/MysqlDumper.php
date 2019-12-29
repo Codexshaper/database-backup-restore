@@ -66,27 +66,34 @@ class MysqlDumper extends Dumper
 
     protected function prepareDumpCommand(string $credentialFile, string $destinationPath): string
     {
+        // Database
         $databaseArg = escapeshellarg($this->dbName);
-
+        // Include tables
         $includeTables    = (count($this->tables) > 0) ? implode(' ', $this->tables) : "";
         $includeTablesArg = !empty($includeTables) ? '--tables ' . escapeshellarg($includeTables) : '';
-
+        // Ignore Tables
         $ignoreTablesArgs = [];
         foreach ($this->ignoreTables as $tableName) {
             $ignoreTablesArgs[] = "--ignore-table=" . $databaseArg . "." . escapeshellarg($tableName);
         }
         $ignoreTablesArg = (count($ignoreTablesArgs) > 0) ? implode(' ', $ignoreTablesArgs) : '';
-
-        $singleTransaction   = ($this->singleTransaction) ? "--single-transaction" : "";
-        $skipLockTable       = ($this->skipLockTables) ? "--skip-lock-tables" : "";
-        $quick               = ($this->quick) ? "--quick" : "";
-        $createTables        = (!$this->createTables) ? '--no-create-info' : '';
-        $skipComments        = ($this->skipComments) ? '--skip-comments' : '';
-        $socket              = ($this->socket !== '') ? "--socket={$this->socket}" : '';
+        // Single Transaction
+        $singleTransaction = ($this->singleTransaction) ? "--single-transaction" : "";
+        // Skip Lock Table
+        $skipLockTable = ($this->skipLockTables) ? "--skip-lock-tables" : "";
+        // Quick
+        $quick = ($this->quick) ? "--quick" : "";
+        // Create Tables
+        $createTables = (!$this->createTables) ? '--no-create-info' : '';
+        // Skip Comments
+        $skipComments = ($this->skipComments) ? '--skip-comments' : '';
+        // Socket
+        $socket = ($this->socket !== '') ? "--socket={$this->socket}" : '';
+        // Default charecter set
         $defaultCharacterSet = ($this->defaultCharacterSet !== '') ? '--default-character-set=' . $this->defaultCharacterSet : '';
-
+        // Authentication File
         $authenticate = "--defaults-extra-file=" . $credentialFile;
-
+        // Dump command
         $dumpCommand = sprintf(
             '%smysqldump %s %s %s %s %s %s %s %s %s %s %s',
             $this->dumpCommandPath,
@@ -102,9 +109,8 @@ class MysqlDumper extends Dumper
             $includeTablesArg,
             $ignoreTablesArg
         );
-
+        // Add compressor if compress is enable
         if ($this->isCompress) {
-
             return "{$dumpCommand} | {$this->compressBinaryPath}{$this->compressCommand} > {$destinationPath}{$this->compressExtension}";
         }
 
@@ -113,17 +119,18 @@ class MysqlDumper extends Dumper
 
     protected function prepareRestoreCommand(string $credentialFile, string $filePath): string
     {
-        $database     = escapeshellarg($this->dbName);
+        // Database
+        $database = escapeshellarg($this->dbName);
+        // Authentication File
         $authenticate = "--defaults-extra-file=" . $credentialFile;
-
+        // Restore command
         $restoreCommand = sprintf("%smysql %s %s",
             $this->dumpCommandPath,
             $authenticate,
             $database
         );
-
+        // Add compressor if compress is enable
         if ($this->isCompress) {
-
             return "{$this->compressBinaryPath}{$this->compressCommand} < {$filePath} | {$restoreCommand}";
         }
 
