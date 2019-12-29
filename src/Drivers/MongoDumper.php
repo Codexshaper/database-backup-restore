@@ -48,64 +48,42 @@ class MongoDumper extends Dumper
 
     protected function prepareDumpCommand(string $destinationPath): string
     {
-        $options = [
-            'archive'                => '',
-            'database'               => '',
-            'username'               => '',
-            'password'               => '',
-            'host'                   => '',
-            'port'                   => '',
-            'collection'             => '',
-            'authenticationDatabase' => '',
-        ];
+        $command = "{$this->dumpCommandPath}mongodump ";
+
+        if ($this->isCompress) {
+            $command .= "--archive --gzip ";
+        }
         // Database
         if (!empty($this->dbName)) {
-            $options['database'] = "--db {$this->dbName}";
+            $command .= "--db {$this->dbName} ";
         }
         // Username
         if (!empty($this->username)) {
-            $options['username'] = "--username {$this->username}";
+            $command .= "--username {$this->username} ";
         }
         //Password
         if (!empty($this->password)) {
-            $options['password'] = "--password {$this->password}";
+            $command .= "--password {$this->password} ";
         }
         // Host
         if (!empty($this->host)) {
-            $options['host'] = "--host {$this->host}";
+            $command .= "--host {$this->host} ";
         }
         // Port
         if (!empty($this->port)) {
-            $options['port'] = "--port {$this->port}";
+            $command .= "--port {$this->port} ";
         }
         // Collection
         if (!empty($this->collection)) {
-            $options['collection'] = "--collection {$this->collection}";
+            $command .= "--collection {$this->collection} ";
         }
         // Authentication Database
         if (!empty($this->authenticationDatabase)) {
-            $options[] = "--authenticationDatabase {$this->authenticationDatabase}";
+            $command .= "--authenticationDatabase {$this->authenticationDatabase}";
         }
-        // Archive
-        if ($this->isCompress) {
-            $options['archive'] = "--archive --gzip";
-        }
-        // Dump Command
-        $dumpCommand = sprintf(
-            '%smongodump %s %s %s %s %s %s %s %s',
-            $this->dumpCommandPath,
-            $options['archive'],
-            $options['database'],
-            $options['username'],
-            $options['password'],
-            $options['host'],
-            $options['port'],
-            $options['collection'],
-            $options['authenticationDatabase']
-        );
         // Generate dump command from uri
         if ($this->uri) {
-            $dumpCommand = sprintf(
+            $command = sprintf(
                 '%smongodump %s --uri %s %s',
                 $this->dumpCommandPath,
                 $options['archive'],
@@ -115,10 +93,10 @@ class MongoDumper extends Dumper
         }
 
         if ($this->isCompress) {
-            return "{$dumpCommand} > {$destinationPath}{$this->compressExtension}";
+            return "{$command} > {$destinationPath}{$this->compressExtension}";
         }
 
-        return "{$dumpCommand} --out {$destinationPath}";
+        return "{$command} --out {$destinationPath}";
     }
 
     protected function prepareRestoreCommand(string $filePath): string

@@ -67,61 +67,46 @@ class MysqlDumper extends Dumper
 
     protected function prepareDumpCommand(string $credentialFile, string $destinationPath): string
     {
-        $options = [
-            "command"     => "{$this->dumpCommandPath}mysqldump",
-            "credentials" => "--defaults-extra-file={$credentialFile}",
-        ];
+        $command = "{$this->dumpCommandPath}mysqldump --defaults-extra-file={$credentialFile} ";
 
         if (!empty($this->dbName)) {
-            $options['database'] = $this->dbName;
+            $command .= $this->dbName . " ";
         }
-
         if ($this->socket !== '') {
-            $options['socket'] = "--socket={$this->socket}";
+            $command .= "--socket={$this->socket} ";
         }
-
         if ($this->skipComments) {
-            $options['skipComments'] = '--skip-comments';
+            $command .= '--skip-comments ';
         }
-
         if (!$this->createTables) {
-            $options['createTables'] = '--no-create-info';
+            $command .= '--no-create-info ';
         }
-
         if ($this->singleTransaction) {
-            $options['singleTransaction'] = '--single-transaction';
+            $command .= '--single-transaction ';
         }
-
         if ($this->skipLockTables) {
-            $options['skipLockTables'] = '--skip-lock-tables';
+            $command .= '--skip-lock-tables ';
         }
-
         if ($this->quick) {
-            $options['quick'] = '--quick';
+            $command .= '--quick ';
         }
-
         if ($this->defaultCharacterSet) {
-            $options['defaultCharacterSet'] = '--default-character-set=' . $this->defaultCharacterSet;
+            $command .= "--default-character-set={$this->defaultCharacterSet} ";
         }
-
         if (count($this->tables) > 0) {
-            $options['tables'] = '--tables ' . implode(' ', $this->tables);
+            $includetables = implode(' ', $this->tables);
+            $command .= "--tables {$includetables} ";
         }
         // Ignore Tables
         $ignoreTables = [];
         foreach ($this->ignoreTables as $tableName) {
-            $ignoreTables[]          = "--ignore-table={$this->dbName}.{$tableName}";
-            $options['ignoreTables'] = implode(' ', $ignoreTables);
+            $command .= "--ignore-table={$this->dbName}.{$tableName} ";
         }
-
-        // Dump command
-        $dumpCommand = implode(' ', $options);
         // Add compressor if compress is enable
         if ($this->isCompress) {
-            return "{$dumpCommand} | {$this->compressBinaryPath}{$this->compressCommand} > {$destinationPath}{$this->compressExtension}";
+            return "{$command} | {$this->compressBinaryPath}{$this->compressCommand} > {$destinationPath}{$this->compressExtension}";
         }
-
-        return "{$dumpCommand} > {$destinationPath}";
+        return "{$command} > {$destinationPath}";
     }
 
     protected function prepareRestoreCommand(string $credentialFile, string $filePath): string
