@@ -1,3 +1,5 @@
+[![Quality Score](https://img.shields.io/scrutinizer/g/Codexshaper/database-backup-restore.svg?style=flat-square)](https://scrutinizer-ci.com/g/Codexshaper/database-backup-restore)
+
 # database-backup-restore
 Database Backup &amp; Restore
 
