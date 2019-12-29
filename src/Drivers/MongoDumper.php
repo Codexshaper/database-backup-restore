@@ -94,14 +94,14 @@ class MongoDumper extends Dumper
         $dumpCommand = sprintf(
             '%smongodump %s %s %s %s %s %s %s %s',
             $this->dumpCommandPath,
-            $archive,
-            $databaseArg,
-            $username,
-            $password,
-            $host,
-            $port,
-            $collection,
-            $authenticationDatabase
+            $options['archive'],
+            $options['databaseArg'],
+            $options['username'],
+            $options['password'],
+            $options['host'],
+            $options['port'],
+            $options['collection'],
+            $options['authenticationDatabase']
         );
         // Generate dump command from uri
         if ($this->uri) {
