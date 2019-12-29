@@ -48,75 +48,76 @@ class MongoDumper extends Dumper
 
     protected function prepareDumpCommand(string $destinationPath): string
     {
-        $command = $this->prepareDumpOptions();
+        $dumpCommand = $this->prepareDumpOptions();
 
-        if ($this->isCompress) {
-            return "{$command} > {$destinationPath}{$this->compressExtension}";
+        if ($this->uri) {
+            $dumpCommand = $this->prepareDumpUriCommand();
         }
 
-        return "{$command} --out {$destinationPath}";
+        if ($this->isCompress) {
+            return "{$dumpCommand} > {$destinationPath}{$this->compressExtension}";
+        }
+
+        return "{$dumpCommand} --out {$destinationPath}";
     }
 
-    protected function prepareDumpOptions()
+    public function prepareDumpUriCommand()
     {
-        $options = [
-            "{$this->dumpCommandPath}mongodump",
-        ];
+
+        return sprintf(
+            '%smongodump %s --uri %s %s',
+            $this->dumpCommandPath,
+            $this->getArchive(),
+            $this->uri,
+            $collection
+        );
+    }
+
+    public function getArchive()
+    {
+        $archive = "";
         if ($this->isCompress) {
-            $options[] = "--archive --gzip";
+            $archive = "--archive --gzip";
         }
-        if ($this->uri) {
-            $options[] = $this->uri;
-        }
-        // Database
-        if ($this->dbName && !$this->uri) {
-            $options[] = "--db {$this->dbName}";
-        }
-        // Username
-        if ($this->username && !$this->uri) {
-            $options[] = "--username {$this->username}";
-        }
-        //Password
-        if ($this->password && !$this->uri) {
-            $options[] = "--password {$this->password}";
-        }
-        // Host
-        if ($this->host && !$this->uri) {
-            $options[] = "--host {$this->host}";
-        }
-        // Port
-        if ($this->port && !$this->uri) {
-            $options[] = "--port {$this->port}";
-        }
-        // Collection
-        if ($this->collection) {
-            $options[] = "--collection {$this->collection}";
-        }
-        // Authentication Database
-        if ($this->authenticationDatabase && !$this->uri) {
-            $options[] = "--authenticationDatabase {$this->authenticationDatabase}";
-        }
-        return implode(' ', $options);
+        return $archive;
+    }
+
+    public function prepareDumpOptions()
+    {
+        $databaseArg            = !empty($this->dbName) ? "--db " . escapeshellarg($this->dbName) : "";
+        $username               = !empty($this->username) ? "--username " . escapeshellarg($this->username) : "";
+        $password               = !empty($this->password) ? "--password " . escapeshellarg($this->password) : "";
+        $host                   = !empty($this->host) ? "--host " . escapeshellarg($this->host) : "";
+        $port                   = !empty($this->port) ? "--port " . escapeshellarg($this->port) : "";
+        $collection             = !empty($this->collection) ? "--collection " . escapeshellarg($this->collection) : "";
+        $authenticationDatabase = !empty($this->authenticationDatabase) ? "--authenticationDatabase " . escapeshellarg($this->authenticationDatabase) : "";
+
+        return sprintf(
+            '%smongodump %s %s %s %s %s %s %s %s',
+            $this->dumpCommandPath,
+            $this->getArchive(),
+            $databaseArg,
+            $username,
+            $password,
+            $host,
+            $port,
+            $collection,
+            $authenticationDatabase
+        );
     }
 
     protected function prepareRestoreCommand(string $filePath): string
     {
-        // Username
-        $username = !empty($this->username) ? "--username " . escapeshellarg($this->username) : "";
-        // Host
-        $host = !empty($this->host) ? "--host " . escapeshellarg($this->host) : "";
-        // Port
-        $port = !empty($this->port) ? "--port " . escapeshellarg($this->port) : "";
-        // Authentication Database
+        $username               = !empty($this->username) ? "--username " . escapeshellarg($this->username) : "";
+        $host                   = !empty($this->host) ? "--host " . escapeshellarg($this->host) : "";
+        $port                   = !empty($this->port) ? "--port " . escapeshellarg($this->port) : "";
         $authenticationDatabase = !empty($this->authenticationDatabase) ? "--authenticationDatabase " . escapeshellarg($this->authenticationDatabase) : "";
-        // Archive
+
         $archive = "";
-
         if ($this->isCompress) {
-
             $archive = "--gzip --archive";
         }
-        // Restore Command
+
         $restoreCommand = sprintf("%smongorestore %s %s %s %s %s",
             $this->dumpCommandPath,
             $archive,
@@ -125,7 +126,7 @@ class MongoDumper extends Dumper
             $username,
             $authenticationDatabase
         );
-        // Generate restore command for uri
+
         if ($this->uri) {
             $restoreCommand = sprintf(
                 '%smongorestore %s --uri %s',
@@ -134,8 +135,9 @@ class MongoDumper extends Dumper
                 $this->uri
             );
         }
-        // Check compress is enable
+
         if ($this->isCompress) {
+
             return "{$restoreCommand} < {$filePath}";
         }
 
