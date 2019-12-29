@@ -48,10 +48,27 @@ class MongoDumper extends Dumper
 
     protected function prepareDumpCommand(string $destinationPath): string
     {
-        $dumpCommand = $this->prepareDumpOptions();
+        $dumpCommand = sprintf(
+            '%smongodump %s %s %s %s %s %s %s %s',
+            $this->dumpCommandPath,
+            $this->getArchiveCommand(),
+            $this->getDatabaseOption(),
+            $this->getUsernameOption(),
+            $this->getPasswordOption(),
+            $this->getHostOption(),
+            $this->getPortOption(),
+            $this->getCollectionCommand(),
+            $this->getAuthenticateDatabase(),
+        );
 
         if ($this->uri) {
-            $dumpCommand = $this->prepareDumpUriCommand();
+            $dumpCommand = sprintf(
+                '%smongodump %s --uri %s %s',
+                $this->dumpCommandPath,
+                $this->getArchiveOption(),
+                $this->uri,
+                $this->getCollectionOption()
+            );
         }
 
         if ($this->isCompress) {
@@ -61,50 +78,44 @@ class MongoDumper extends Dumper
         return "{$dumpCommand} --out {$destinationPath}";
     }
 
-    public function prepareDumpUriCommand()
+    public function getDatabaseOption()
     {
-        $collection = !empty($this->collection) ? "--collection " . escapeshellarg($this->collection) : "";
-
-        return sprintf(
-            '%smongodump %s --uri %s %s',
-            $this->dumpCommandPath,
-            $this->getArchive(),
-            $this->uri,
-            $collection
-        );
+        return !empty($this->dbName) ? "--db " . escapeshellarg($this->dbName) : "";
     }
 
-    public function getArchive()
+    public function getUsernameOption()
     {
-        $archive = "";
-        if ($this->isCompress) {
-            $archive = "--archive --gzip";
-        }
-        return $archive;
+        return !empty($this->username) ? "--username " . escapeshellarg($this->username) : "";
     }
 
-    public function prepareDumpOptions()
+    public function getPasswordOption()
     {
-        $databaseArg            = !empty($this->dbName) ? "--db " . escapeshellarg($this->dbName) : "";
-        $username               = !empty($this->username) ? "--username " . escapeshellarg($this->username) : "";
-        $password               = !empty($this->password) ? "--password " . escapeshellarg($this->password) : "";
-        $host                   = !empty($this->host) ? "--host " . escapeshellarg($this->host) : "";
-        $port                   = !empty($this->port) ? "--port " . escapeshellarg($this->port) : "";
-        $collection             = !empty($this->collection) ? "--collection " . escapeshellarg($this->collection) : "";
-        $authenticationDatabase = !empty($this->authenticationDatabase) ? "--authenticationDatabase " . escapeshellarg($this->authenticationDatabase) : "";
+        return !empty($this->password) ? "--password " . escapeshellarg($this->password) : "";
+    }
 
-        return sprintf(
-            '%smongodump %s %s %s %s %s %s %s %s',
-            $this->dumpCommandPath,
-            $this->getArchive(),
-            $databaseArg,
-            $username,
-            $password,
-            $host,
-            $port,
-            $collection,
-            $authenticationDatabase
-        );
+    public function getHostOption()
+    {
+        return !empty($this->host) ? "--host " . escapeshellarg($this->host) : "";
+    }
+
+    public function getPortOption()
+    {
+        return !empty($this->port) ? "--port " . escapeshellarg($this->port) : "";
+    }
+
+    public function getAuthenticateDatabase()
+    {
+        return !empty($this->authenticationDatabase) ? "--authenticationDatabase " . escapeshellarg($this->authenticationDatabase) : "";
+    }
+
+    public function getCollectionOption()
+    {
+        return !empty($this->collection) ? "--collection " . escapeshellarg($this->collection) : "";
+    }
+
+    public function getArchiveOption()
+    {
+        return $this->isCompress ? "--archive --gzip" : "";
     }
 
     protected function prepareRestoreCommand(string $filePath): string
