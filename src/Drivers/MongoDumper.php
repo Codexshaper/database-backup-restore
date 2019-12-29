@@ -69,7 +69,7 @@ class MongoDumper extends Dumper
 
             $archive = "--archive --gzip";
         }
-
+        // Dump Command
         $dumpCommand = sprintf(
             '%smongodump %s %s %s %s %s %s %s %s',
             $this->dumpCommandPath,
@@ -82,7 +82,7 @@ class MongoDumper extends Dumper
             $collection,
             $authenticationDatabase
         );
-
+        // Generate dump command from uri
         if ($this->uri) {
             $dumpCommand = sprintf(
                 '%smongodump %s --uri %s %s',
@@ -102,18 +102,22 @@ class MongoDumper extends Dumper
 
     protected function prepareRestoreCommand(string $filePath): string
     {
-        $username               = !empty($this->username) ? "--username " . escapeshellarg($this->username) : "";
-        $host                   = !empty($this->host) ? "--host " . escapeshellarg($this->host) : "";
-        $port                   = !empty($this->port) ? "--port " . escapeshellarg($this->port) : "";
+        // Username
+        $username = !empty($this->username) ? "--username " . escapeshellarg($this->username) : "";
+        // Host
+        $host = !empty($this->host) ? "--host " . escapeshellarg($this->host) : "";
+        // Port
+        $port = !empty($this->port) ? "--port " . escapeshellarg($this->port) : "";
+        // Authentication Database
         $authenticationDatabase = !empty($this->authenticationDatabase) ? "--authenticationDatabase " . escapeshellarg($this->authenticationDatabase) : "";
-
+        // Archive
         $archive = "";
 
         if ($this->isCompress) {
 
             $archive = "--gzip --archive";
         }
-
+        // Restore Command
         $restoreCommand = sprintf("%smongorestore %s %s %s %s %s",
             $this->dumpCommandPath,
             $archive,
@@ -122,7 +126,7 @@ class MongoDumper extends Dumper
             $username,
             $authenticationDatabase
         );
-
+        // Generate restore command for uri
         if ($this->uri) {
             $restoreCommand = sprintf(
                 '%smongorestore %s --uri %s',
@@ -131,9 +135,8 @@ class MongoDumper extends Dumper
                 $this->uri
             );
         }
-
+        // Check compress is enable
         if ($this->isCompress) {
-
             return "{$restoreCommand} < {$filePath}";
         }
 

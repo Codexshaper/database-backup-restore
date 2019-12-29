@@ -23,7 +23,7 @@ class MySqlTest extends TestCase
             ->dump('dump.sql');
         $tempFile = $dumper->getTempFile();
         $command  = $dumper->getCommand();
-        $this->assertSame('mysqldump --defaults-extra-file=' . $tempFile . ' "dbname" --skip-comments > dump.sql', $command);
+        $this->assertSame('mysqldump --defaults-extra-file=' . $tempFile . ' dbname --skip-comments > dump.sql', $command);
     }
 
     /** @test */
@@ -37,7 +37,7 @@ class MySqlTest extends TestCase
             ->dump('dump.sql');
         $command  = $dumper->getCommand();
         $tempFile = $dumper->getTempFile();
-        $this->assertSame('mysqldump --defaults-extra-file=' . $tempFile . ' "dbname" --skip-comments | gzip > dump.sql.gz', $command);
+        $this->assertSame('mysqldump --defaults-extra-file=' . $tempFile . ' dbname --skip-comments | gzip > dump.sql.gz', $command);
     }
 
     /** @test */
@@ -50,7 +50,21 @@ class MySqlTest extends TestCase
             ->dump('/path/to/directory/dump.sql');
         $command  = $dumper->getCommand();
         $tempFile = $dumper->getTempFile();
-        $this->assertSame('mysqldump --defaults-extra-file=' . $tempFile . ' "dbname" --skip-comments > /path/to/directory/dump.sql', $command);
+        $this->assertSame('mysqldump --defaults-extra-file=' . $tempFile . ' dbname --skip-comments > /path/to/directory/dump.sql', $command);
+    }
+
+    /** @test */
+    public function it_can_generate_a_dump_command_without_using_comments()
+    {
+        $dumper = MysqlDumper::create()
+            ->setDbName('dbname')
+            ->setUserName('username')
+            ->setPassword('password')
+            ->doNotUseSkipComments()
+            ->dump('dump.sql');
+        $tempFile = $dumper->getTempFile();
+        $command  = $dumper->getCommand();
+        $this->assertSame('mysqldump --defaults-extra-file=' . $tempFile . ' dbname > dump.sql', $command);
     }
 
     /** @test */
@@ -64,7 +78,7 @@ class MySqlTest extends TestCase
         $tempFile = $dumper->getTempFile();
         $command  = $dumper->getCommand();
 
-        $this->assertSame('mysql --defaults-extra-file=' . $tempFile . ' "dbname" < dump.sql', $command);
+        $this->assertSame('mysql --defaults-extra-file=' . $tempFile . ' dbname < dump.sql', $command);
     }
 
     /** @test */
@@ -78,7 +92,7 @@ class MySqlTest extends TestCase
             ->restore('dump.sql.gz');
         $command  = $dumper->getCommand();
         $tempFile = $dumper->getTempFile();
-        $this->assertSame('gzip < dump.sql.gz | mysql --defaults-extra-file=' . $tempFile . ' "dbname"', $command);
+        $this->assertSame('gzip < dump.sql.gz | mysql --defaults-extra-file=' . $tempFile . ' dbname', $command);
     }
 
     /** @test */
@@ -91,6 +105,6 @@ class MySqlTest extends TestCase
             ->restore('/path/to/directory/dump.sql');
         $command  = $dumper->getCommand();
         $tempFile = $dumper->getTempFile();
-        $this->assertSame('mysql --defaults-extra-file=' . $tempFile . ' "dbname" < /path/to/directory/dump.sql', $command);
+        $this->assertSame('mysql --defaults-extra-file=' . $tempFile . ' dbname < /path/to/directory/dump.sql', $command);
     }
 }

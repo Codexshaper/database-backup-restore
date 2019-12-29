@@ -67,14 +67,14 @@ class MysqlDumper extends Dumper
     protected function prepareDumpCommand(string $credentialFile, string $destinationPath): string
     {
         // Database
-        $databaseArg = escapeshellarg($this->dbName);
+        $databaseArg = $this->dbName;
         // Include tables
         $includeTables    = (count($this->tables) > 0) ? implode(' ', $this->tables) : "";
-        $includeTablesArg = !empty($includeTables) ? '--tables ' . escapeshellarg($includeTables) : '';
+        $includeTablesArg = !empty($includeTables) ? '--tables ' . $includeTables : '';
         // Ignore Tables
         $ignoreTablesArgs = [];
         foreach ($this->ignoreTables as $tableName) {
-            $ignoreTablesArgs[] = "--ignore-table=" . $databaseArg . "." . escapeshellarg($tableName);
+            $ignoreTablesArgs[] = "--ignore-table=" . $databaseArg . "." . $tableName;
         }
         $ignoreTablesArg = (count($ignoreTablesArgs) > 0) ? implode(' ', $ignoreTablesArgs) : '';
         // Single Transaction
@@ -120,7 +120,7 @@ class MysqlDumper extends Dumper
     protected function prepareRestoreCommand(string $credentialFile, string $filePath): string
     {
         // Database
-        $database = escapeshellarg($this->dbName);
+        $database = $this->dbName;
         // Authentication File
         $authenticate = "--defaults-extra-file=" . $credentialFile;
         // Restore command
