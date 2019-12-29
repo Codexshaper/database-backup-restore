@@ -48,16 +48,18 @@ class MongoDumper extends Dumper
 
     protected function prepareDumpCommand(string $destinationPath): string
     {
+        $archive = $this->isCompress ? "--archive --gzip" : "";
+
         $dumpCommand = sprintf(
             '%smongodump %s %s %s %s %s %s %s %s',
             $this->dumpCommandPath,
-            $this->getArchiveCommand(),
+            $archive,
             $this->getDatabaseOption(),
             $this->getUsernameOption(),
             $this->getPasswordOption(),
             $this->getHostOption(),
             $this->getPortOption(),
-            $this->getCollectionCommand(),
+            $this->getCollectionOption(),
             $this->getAuthenticateDatabase(),
         );
 
@@ -65,7 +67,7 @@ class MongoDumper extends Dumper
             $dumpCommand = sprintf(
                 '%smongodump %s --uri %s %s',
                 $this->dumpCommandPath,
-                $this->getArchiveOption(),
+                $archive,
                 $this->uri,
                 $this->getCollectionOption()
             );
@@ -80,63 +82,56 @@ class MongoDumper extends Dumper
 
     public function getDatabaseOption()
     {
-        return !empty($this->dbName) ? "--db " . escapeshellarg($this->dbName) : "";
+        return !empty($this->dbName) ? "--db {$this->dbName}" : "";
     }
 
     public function getUsernameOption()
     {
-        return !empty($this->username) ? "--username " . escapeshellarg($this->username) : "";
+        return !empty($this->username) ? "--username {$this->username}" : "";
     }
 
     public function getPasswordOption()
     {
-        return !empty($this->password) ? "--password " . escapeshellarg($this->password) : "";
+        return !empty($this->password) ? "--password {$this->password}" : "";
     }
 
     public function getHostOption()
     {
-        return !empty($this->host) ? "--host " . escapeshellarg($this->host) : "";
+        return !empty($this->host) ? "--host {$this->host}" : "";
     }
 
     public function getPortOption()
     {
-        return !empty($this->port) ? "--port " . escapeshellarg($this->port) : "";
+        return !empty($this->port) ? "--port {$this->port}" : "";
     }
 
     public function getAuthenticateDatabase()
     {
-        return !empty($this->authenticationDatabase) ? "--authenticationDatabase " . escapeshellarg($this->authenticationDatabase) : "";
+        return !empty($this->authenticationDatabase) ? "--authenticationDatabase {$this->authenticationDatabase}" : "";
     }
 
     public function getCollectionOption()
     {
-        return !empty($this->collection) ? "--collection " . escapeshellarg($this->collection) : "";
+        return !empty($this->collection) ? "--collection {$this->collection}" : "";
     }
 
     public function getArchiveOption()
     {
-        return $this->isCompress ? "--archive --gzip" : "";
+        return 
     }
 
     protected function prepareRestoreCommand(string $filePath): string
     {
-        $username               = !empty($this->username) ? "--username " . escapeshellarg($this->username) : "";
-        $host                   = !empty($this->host) ? "--host " . escapeshellarg($this->host) : "";
-        $port                   = !empty($this->port) ? "--port " . escapeshellarg($this->port) : "";
-        $authenticationDatabase = !empty($this->authenticationDatabase) ? "--authenticationDatabase " . escapeshellarg($this->authenticationDatabase) : "";
 
-        $archive = "";
-        if ($this->isCompress) {
-            $archive = "--gzip --archive";
-        }
+        $archive = $this->isCompress ?  "--gzip --archive" : "";
 
         $restoreCommand = sprintf("%smongorestore %s %s %s %s %s",
             $this->dumpCommandPath,
             $archive,
-            $host,
-            $port,
-            $username,
-            $authenticationDatabase
+            $this->getHostOption(),
+            $this->getPortOption(),
+            $this->getUsernameOption(),
+            $this->getAuthenticateDatabase()
         );
 
         if ($this->uri) {
