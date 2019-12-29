@@ -53,44 +53,37 @@ class MongoDumper extends Dumper
         if ($this->isCompress) {
             $command .= "--archive --gzip ";
         }
+
+        if ($this->uri) {
+            $command .= $this->uri;
+        }
         // Database
-        if (!empty($this->dbName)) {
+        if ($this->dbName && !$this->uri) {
             $command .= "--db {$this->dbName} ";
         }
         // Username
-        if (!empty($this->username)) {
+        if ($this->username && !$this->uri) {
             $command .= "--username {$this->username} ";
         }
         //Password
-        if (!empty($this->password)) {
+        if ($this->password && !$this->uri) {
             $command .= "--password {$this->password} ";
         }
         // Host
-        if (!empty($this->host)) {
+        if ($this->host && !$this->uri) {
             $command .= "--host {$this->host} ";
         }
         // Port
-        if (!empty($this->port)) {
+        if ($this->port && !$this->uri) {
             $command .= "--port {$this->port} ";
         }
         // Collection
-        if (!empty($this->collection)) {
+        if ($this->collection) {
             $command .= "--collection {$this->collection} ";
         }
         // Authentication Database
-        if (!empty($this->authenticationDatabase)) {
+        if ($this->authenticationDatabase && !$this->uri) {
             $command .= "--authenticationDatabase {$this->authenticationDatabase}";
-        }
-        // Generate dump command from uri
-        if ($this->uri) {
-            $command = "{$this->dumpCommandPath}mongodump {$this->uri}";
-            if ($this->isCompress) {
-                $command .= "--archive --gzip ";
-            }
-            // Collection
-            if (!empty($this->collection)) {
-                $command .= "--collection {$this->collection} ";
-            }
         }
 
         if ($this->isCompress) {
