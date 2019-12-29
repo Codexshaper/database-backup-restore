@@ -28,20 +28,20 @@ abstract class Dumper implements DumperContract
     /**
      * @return \Symfony\Component\Process\Process
      */
-    protected function prepareProcessCommand(string $command)
+    protected function prepareProcessCommand()
     {
-        $process = Process::fromShellCommandline($command);
+        $process = Process::fromShellCommandline($this->command);
         $process->setTimeout($this->timeout);
         return $process;
     }
     /**
      * @return \Symfony\Component\Process\Process
      */
-    protected function run(string $command)
+    protected function run()
     {
         try {
 
-            $process = Process::fromShellCommandline($command);
+            $process = Process::fromShellCommandline($this->command);
             $process->setTimeout($this->timeout);
 
             if ($this->debug) {

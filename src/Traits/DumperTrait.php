@@ -28,6 +28,8 @@ trait DumperTrait
     protected $destinationPath = 'dump.sql';
     /*@var string*/
     protected $restorePath = 'dump.sql';
+    /*@var string*/
+    protected $tempFile = "";
     /*@var bool*/
     protected $isCompress = false;
     /*@var string*/
@@ -38,6 +40,8 @@ trait DumperTrait
     protected $compressExtension = ".gz";
     /*@var bool*/
     protected $debug = false;
+    /*@var string*/
+    protected $command = "";
 
     public function setDbName(string $name)
     {
@@ -173,17 +177,19 @@ trait DumperTrait
         return $this;
     }
 
-    public function useCompress(string $command, string $extension = ".gz", string $binary_path = "")
+    public function useCompress(string $command = "gzip", string $extension = ".gz", string $binary_path = "")
     {
-        if (empty($command)) {
-            throw new \Exception("You must provide valid zip command", 1);
-        }
-
         $this->compressCommand    = $command;
         $this->compressExtension  = $extension;
         $this->compressBinaryPath = $binary_path;
         $this->isCompress         = true;
 
+        return $this;
+    }
+
+    public function enableDebug()
+    {
+        $this->debug = true;
         return $this;
     }
 
@@ -237,9 +243,13 @@ trait DumperTrait
         return $this->restorePath;
     }
 
-    public function enableDebug()
+    public function getCommand()
     {
-        $this->debug = true;
-        return $this;
+        return $this->command;
+    }
+
+    public function getTempFile()
+    {
+        return $this->tempFile;
     }
 }

@@ -54,12 +54,14 @@ class MysqlDumper extends Dumper
     {
         $destinationPath = !empty($destinationPath) ? $destinationPath : $this->destinationPath;
         $this->runCommand($destinationPath, "dump");
+        return $this;
     }
 
     public function restore(string $restorePath = "")
     {
         $restorePath = !empty($restorePath) ? $restorePath : $this->restorePath;
         $this->runCommand($restorePath, 'restore');
+        return $this;
     }
 
     protected function prepareDumpCommand(string $credentialFile, string $destinationPath): string
@@ -133,23 +135,28 @@ class MysqlDumper extends Dumper
         try {
 
             $credentials    = $this->getCredentials();
-            $credentialFile = tempnam(sys_get_temp_dir(), 'mysqlpass');
-            $handler        = fopen($credentialFile, 'r+');
+            $this->tempFile = tempnam(sys_get_temp_dir(), 'mysqlpass');
+            $handler        = fopen($this->tempFile, 'r+');
             fwrite($handler, $credentials);
 
             if ($action == 'dump') {
-                $command = $this->prepareDumpCommand($credentialFile, $filePath);
+                $this->command = preg_replace('/\s+/', ' ', $this->prepareDumpCommand($this->tempFile, $filePath));
             }
 
             if ($action == 'restore') {
-                $command = $this->prepareRestoreCommand($credentialFile, $filePath);
+                $this->command = preg_replace('/\s+/', ' ', $this->prepareRestoreCommand($this->tempFile, $filePath));
             }
 
-            $process = $this->prepareProcessCommand($command);
-            $process->mustRun();
+            $process = $this->prepareProcessCommand();
+
+            if ($this->debug) {
+                $process->mustRun();
+            } else {
+                $process->run();
+            }
 
             fclose($handler);
-            unlink($credentialFile);
+            unlink($this->tempFile);
 
         } catch (ProcessFailedException $e) {
             throw new \Exception($e->getMessage());

@@ -37,7 +37,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "CodexShaper\\Dumper\\Test": "tests/"
+            "CodexShaper\\Dumper\\": "src/",
+            "CodexShaper\\Dumper\\Test\\": "tests/"
         }
     }
 }

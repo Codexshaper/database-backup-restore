@@ -25,15 +25,15 @@ class PgsqlDumper extends Dumper
     public function dump(string $destinationPath = "")
     {
         $destinationPath = !empty($destinationPath) ? $destinationPath : $this->destinationPath;
-        $command         = $this->prepareDumpCommand($destinationPath);
-        $this->runCommand($command);
+        $this->command   = $this->prepareDumpCommand($destinationPath);
+        $this->runCommand();
     }
 
     public function restore(string $restorePath = "")
     {
-        $restorePath = !empty($restorePath) ? $restorePath : $this->restorePath;
-        $command     = $this->prepareRestoreCommand($restorePath);
-        $this->runCommand($command);
+        $restorePath   = !empty($restorePath) ? $restorePath : $this->restorePath;
+        $this->command = $this->prepareRestoreCommand($restorePath);
+        $this->runCommand();
     }
 
     protected function prepareDumpCommand(string $destinationPath): string
@@ -91,20 +91,20 @@ class PgsqlDumper extends Dumper
         return "{$restoreCommand} < {$filePath}";
     }
 
-    protected function runCommand($command)
+    protected function runCommand()
     {
         try {
 
             $credentials    = $this->host . ':' . $this->port . ':' . $this->dbName . ':' . $this->username . ':' . $this->password;
-            $credentialFile = tempnam(sys_get_temp_dir(), 'pgsqlpass');
-            $handler        = fopen($credentialFile, 'r+');
+            $this->tempFile = tempnam(sys_get_temp_dir(), 'pgsqlpass');
+            $handler        = fopen($this->tempFile, 'r+');
             fwrite($handler, $credentials);
-            $process = $this->prepareProcessCommand($command);
+            $process = $this->prepareProcessCommand($this->command);
             $process->run(null, [
-                'PGPASSFILE' => $credentialFile,
+                'PGPASSFILE' => $this->tempFile,
             ]);
             fclose($handler);
-            unlink($credentialFile);
+            unlink($this->tempFile);
 
         } catch (ProcessFailedException $e) {
             throw new \Exception($e->getMessage());
