@@ -63,6 +63,7 @@ class MongoDumper extends Dumper
 
     public function prepareDumpUriCommand()
     {
+        $collection = !empty($this->collection) ? "--collection " . escapeshellarg($this->collection) : "";
 
         return sprintf(
             '%smongodump %s --uri %s %s',
