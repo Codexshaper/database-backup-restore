@@ -98,7 +98,6 @@ class MysqlDumper extends Dumper
             $command .= "--tables {$includetables} ";
         }
         // Ignore Tables
-        $ignoreTables = [];
         foreach ($this->ignoreTables as $tableName) {
             $command .= "--ignore-table={$this->dbName}.{$tableName} ";
         }

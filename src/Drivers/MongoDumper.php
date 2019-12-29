@@ -83,13 +83,14 @@ class MongoDumper extends Dumper
         }
         // Generate dump command from uri
         if ($this->uri) {
-            $command = sprintf(
-                '%smongodump %s --uri %s %s',
-                $this->dumpCommandPath,
-                $options['archive'],
-                $this->uri,
-                $options['collection']
-            );
+            $command = "{$this->dumpCommandPath}mongodump {$this->uri}";
+            if ($this->isCompress) {
+                $command .= "--archive --gzip ";
+            }
+            // Collection
+            if (!empty($this->collection)) {
+                $command .= "--collection {$this->collection} ";
+            }
         }
 
         if ($this->isCompress) {
