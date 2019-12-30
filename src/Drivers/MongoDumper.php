@@ -60,7 +60,7 @@ class MongoDumper extends Dumper
             $this->getHostOption(),
             $this->getPortOption(),
             $this->getCollectionOption(),
-            $this->getAuthenticateDatabase(),
+            $this->getAuthenticateDatabase()
         );
 
         if ($this->uri) {
