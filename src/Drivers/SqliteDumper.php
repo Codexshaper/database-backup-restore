@@ -9,16 +9,16 @@ class SqliteDumper extends Dumper
     public function dump(string $destinationPath = "")
     {
         $destinationPath = !empty($destinationPath) ? $destinationPath : $this->destinationPath;
-        $dumpCommand = $this->prepareDumpCommand($destinationPath)
+        $dumpCommand     = $this->prepareDumpCommand($destinationPath);
         $this->command   = $this->removeExtraSpaces($dumpCommand);
         $this->run();
     }
 
     public function restore(string $restorePath = "")
     {
-        $restorePath   = !empty($restorePath) ? $restorePath : $this->restorePath;
+        $restorePath    = !empty($restorePath) ? $restorePath : $this->restorePath;
         $restoreCommand = $this->prepareRestoreCommand($restorePath);
-        $this->command = $this->removeExtraSpaces($restoreCommand);
+        $this->command  = $this->removeExtraSpaces($restoreCommand);
         $this->run();
     }
 
