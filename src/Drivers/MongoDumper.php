@@ -54,13 +54,13 @@ class MongoDumper extends Dumper
             '%smongodump %s %s %s %s %s %s %s %s',
             $this->dumpCommandPath,
             $archive,
-            $this->getDatabaseOption(),
-            $this->getUsernameOption(),
-            $this->getPasswordOption(),
-            $this->getHostOption(),
-            $this->getPortOption(),
-            $this->getCollectionOption(),
-            $this->getAuthenticateDatabase()
+            $this->prepareDatabase(),
+            $this->prepareUsername(),
+            $this->preparePassword(),
+            $this->prepareHost(),
+            $this->preparePort(),
+            $this->prepareCollection(),
+            $this->prepareAuthenticateDatabase()
         );
 
         if ($this->uri) {
@@ -69,7 +69,7 @@ class MongoDumper extends Dumper
                 $this->dumpCommandPath,
                 $archive,
                 $this->uri,
-                $this->getCollectionOption()
+                $this->prepareCollection()
             );
         }
 
@@ -80,58 +80,18 @@ class MongoDumper extends Dumper
         return "{$dumpCommand} --out {$destinationPath}";
     }
 
-    public function getDatabaseOption()
-    {
-        return !empty($this->dbName) ? "--db {$this->dbName}" : "";
-    }
-
-    public function getUsernameOption()
-    {
-        return !empty($this->username) ? "--username {$this->username}" : "";
-    }
-
-    public function getPasswordOption()
-    {
-        return !empty($this->password) ? "--password {$this->password}" : "";
-    }
-
-    public function getHostOption()
-    {
-        return !empty($this->host) ? "--host {$this->host}" : "";
-    }
-
-    public function getPortOption()
-    {
-        return !empty($this->port) ? "--port {$this->port}" : "";
-    }
-
-    public function getAuthenticateDatabase()
-    {
-        return !empty($this->authenticationDatabase) ? "--authenticationDatabase {$this->authenticationDatabase}" : "";
-    }
-
-    public function getCollectionOption()
-    {
-        return !empty($this->collection) ? "--collection {$this->collection}" : "";
-    }
-
-    public function getArchiveOption()
-    {
-        return 
-    }
-
     protected function prepareRestoreCommand(string $filePath): string
     {
 
-        $archive = $this->isCompress ?  "--gzip --archive" : "";
+        $archive = $this->isCompress ? "--gzip --archive" : "";
 
         $restoreCommand = sprintf("%smongorestore %s %s %s %s %s",
             $this->dumpCommandPath,
             $archive,
-            $this->getHostOption(),
-            $this->getPortOption(),
-            $this->getUsernameOption(),
-            $this->getAuthenticateDatabase()
+            $this->prepareHost(),
+            $this->preparePort(),
+            $this->prepareUsername(),
+            $this->prepareAuthenticateDatabase()
         );
 
         if ($this->uri) {
@@ -149,5 +109,40 @@ class MongoDumper extends Dumper
         }
 
         return "{$restoreCommand} {$filePath}";
+    }
+
+    public function prepareDatabase()
+    {
+        return !empty($this->dbName) ? "--db {$this->dbName}" : "";
+    }
+
+    public function prepareUsername()
+    {
+        return !empty($this->username) ? "--username {$this->username}" : "";
+    }
+
+    public function preparePassword()
+    {
+        return !empty($this->password) ? "--password {$this->password}" : "";
+    }
+
+    public function prepareHost()
+    {
+        return !empty($this->host) ? "--host {$this->host}" : "";
+    }
+
+    public function preparePort()
+    {
+        return !empty($this->port) ? "--port {$this->port}" : "";
+    }
+
+    public function prepareAuthenticateDatabase()
+    {
+        return !empty($this->authenticationDatabase) ? "--authenticationDatabase {$this->authenticationDatabase}" : "";
+    }
+
+    public function prepareCollection()
+    {
+        return !empty($this->collection) ? "--collection {$this->collection}" : "";
     }
 }
