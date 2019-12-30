@@ -112,15 +112,15 @@ class MysqlDumper extends Dumper
         try {
 
             $credentials    = $this->getCredentials();
-            $this->tempFile = tempnam(sys_get_temp_dir(), 'mysqlpass');
-            $handler        = fopen($this->tempFile, 'r+');
+            $this->tempFile = $tempFile = tempnam(sys_get_temp_dir(), 'mysqlpass');
+            $handler        = fopen($tempFile, 'r+');
             fwrite($handler, $credentials);
 
             if ($action == 'dump') {
-                $dumpCommand   = $this->prepareDumpCommand($this->tempFile, $filePath);
+                $dumpCommand   = $this->prepareDumpCommand($tempFile, $filePath);
                 $this->command = $this->removeExtraSpaces($dumpCommand);
             } else if ($action == 'restore') {
-                $dumpCommand   = $this->prepareRestoreCommand($this->tempFile, $filePath);
+                $dumpCommand   = $this->prepareRestoreCommand($tempFile, $filePath);
                 $this->command = $this->removeExtraSpaces($dumpCommand);
             }
 
@@ -133,7 +133,7 @@ class MysqlDumper extends Dumper
             }
 
             fclose($handler);
-            unlink($this->tempFile);
+            unlink($tempFile);
 
         } catch (ProcessFailedException $e) {
             throw new \Exception($e->getMessage());
@@ -169,7 +169,7 @@ class MysqlDumper extends Dumper
     {
         $ignoreTablesArgs = [];
         foreach ($this->ignoreTables as $tableName) {
-            $ignoreTablesArgs[] = "--ignore-table={$databaseArg}.{$tableName}";
+            $ignoreTablesArgs[] = "--ignore-table={$this->dbName}.{$tableName}";
         }
         $ignoreTablesArg = (count($ignoreTablesArgs) > 0) ? implode(' ', $ignoreTablesArgs) : '';
         return $ignoreTablesArg;
