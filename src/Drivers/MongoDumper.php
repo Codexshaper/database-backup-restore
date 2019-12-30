@@ -54,7 +54,7 @@ class MongoDumper extends Dumper
 
         $dumpCommand = sprintf(
             '%smongodump %s %s %s %s %s %s %s %s',
-            $this->dumpCommandPath,
+            $this->commandBinaryPath,
             $archive,
             $this->prepareDatabase(),
             $this->prepareUsername(),
@@ -68,7 +68,7 @@ class MongoDumper extends Dumper
         if ($this->uri) {
             $dumpCommand = sprintf(
                 '%smongodump %s --uri %s %s',
-                $this->dumpCommandPath,
+                $this->commandBinaryPath,
                 $archive,
                 $this->uri,
                 $this->prepareCollection()
@@ -88,7 +88,7 @@ class MongoDumper extends Dumper
         $archive = $this->isCompress ? "--gzip --archive" : "";
 
         $restoreCommand = sprintf("%smongorestore %s %s %s %s %s",
-            $this->dumpCommandPath,
+            $this->commandBinaryPath,
             $archive,
             $this->prepareHost(),
             $this->preparePort(),
@@ -99,7 +99,7 @@ class MongoDumper extends Dumper
         if ($this->uri) {
             $restoreCommand = sprintf(
                 '%smongorestore %s --uri %s',
-                $this->dumpCommandPath,
+                $this->commandBinaryPath,
                 $archive,
                 $this->uri
             );

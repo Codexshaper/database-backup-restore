@@ -69,7 +69,7 @@ class MysqlDumper extends Dumper
     {
         $dumpCommand = sprintf(
             '%smysqldump %s %s %s %s %s %s %s %s %s %s %s',
-            $this->dumpCommandPath,
+            $this->commandBinaryPath,
             $this->prepareAuthentication($credentialFile),
             $this->prepareDatabase(),
             $this->prepareSocket(),
@@ -94,7 +94,7 @@ class MysqlDumper extends Dumper
     protected function prepareRestoreCommand(string $credentialFile, string $filePath): string
     {
         $restoreCommand = sprintf("%smysql %s %s",
-            $this->dumpCommandPath,
+            $this->commandBinaryPath,
             $this->prepareAuthentication($credentialFile),
             $this->prepareDatabase()
         );
@@ -112,16 +112,16 @@ class MysqlDumper extends Dumper
         try {
 
             $credentials    = $this->getCredentials();
-            $this->tempFile = $tempFile = tempnam(sys_get_temp_dir(), 'mysqlpass');
-            $handler        = fopen($tempFile, 'r+');
+            $this->tempFile = tempnam(sys_get_temp_dir(), 'mysqlpass');
+            $handler        = fopen($this->tempFile, 'r+');
             if ($handler !== false) {
                 fwrite($handler, $credentials);
 
                 if ($action == 'dump') {
-                    $dumpCommand   = $this->prepareDumpCommand($tempFile, $filePath);
+                    $dumpCommand   = $this->prepareDumpCommand($this->tempFile, $filePath);
                     $this->command = $this->removeExtraSpaces($dumpCommand);
                 } else if ($action == 'restore') {
-                    $dumpCommand   = $this->prepareRestoreCommand($tempFile, $filePath);
+                    $dumpCommand   = $this->prepareRestoreCommand($this->tempFile, $filePath);
                     $this->command = $this->removeExtraSpaces($dumpCommand);
                 }
 
@@ -134,7 +134,7 @@ class MysqlDumper extends Dumper
                 }
 
                 fclose($handler);
-                unlink($tempFile);
+                unlink($this->tempFile);
             }
 
         } catch (ProcessFailedException $e) {

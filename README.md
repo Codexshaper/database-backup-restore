@@ -290,7 +290,7 @@ Restore from archive using URI
 ```
 // Same for other driver
 \CodexShaper\Dumper\Drivers\MysqlDumper::create($options)
-  ->setDumpCommandPath($binaryPath) // /path/to/mysql/bin
+  ->setCommandBinaryPath($binaryPath) // /path/to/mysql/bin
   ->dump();
 ```
 

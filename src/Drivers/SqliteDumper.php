@@ -26,7 +26,7 @@ class SqliteDumper extends Dumper
     {
         $dumpCommand = sprintf(
             "%ssqlite3 %s .dump",
-            $this->dumpCommandPath,
+            $this->commandBinaryPath,
             $this->dbName
         );
 
@@ -41,7 +41,7 @@ class SqliteDumper extends Dumper
     protected function prepareRestoreCommand(string $filePath): string
     {
         $restoreCommand = sprintf("%ssqlite3 %s",
-            $this->dumpCommandPath,
+            $this->commandBinaryPath,
             $this->dbName
         );
 

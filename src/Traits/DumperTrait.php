@@ -17,7 +17,7 @@ trait DumperTrait
     /*@var string*/
     protected $socket = '';
     /*@var string*/
-    protected $dumpCommandPath = '';
+    protected $commandBinaryPath = '';
     /*@var int*/
     protected $timeout = 0;
     /*@var array*/
@@ -136,9 +136,9 @@ trait DumperTrait
         return $this;
     }
 
-    public function setDumpCommandPath(string $path)
+    public function setCommandBinaryPath(string $path)
     {
-        $this->dumpCommandPath = $path;
+        $this->commandBinaryPath = $path;
 
         return $this;
     }
@@ -228,9 +228,9 @@ trait DumperTrait
         return $this->timeout;
     }
 
-    public function getDumpCommandPath()
+    public function getCommandBinaryPath()
     {
-        return $this->dumpCommandPath;
+        return $this->commandBinaryPath;
     }
 
     public function getDestinationPath()

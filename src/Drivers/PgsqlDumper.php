@@ -43,7 +43,7 @@ class PgsqlDumper extends Dumper
     {
         $dumpCommand = sprintf(
             '%spg_dump -U %s -h %s %s %s %s %s %s %s',
-            $this->dumpCommandPath,
+            $this->commandBinaryPath,
             $this->prepareUsername(),
             $this->prepareHost(),
             $this->preparePort(),
@@ -63,7 +63,7 @@ class PgsqlDumper extends Dumper
     protected function prepareRestoreCommand(string $filePath): string
     {
         $restoreCommand = sprintf("%spsql -U %s -h %s %s %s",
-            $this->dumpCommandPath,
+            $this->commandBinaryPath,
             $this->prepareUsername(),
             $this->prepareHost(),
             $this->preparePort(),

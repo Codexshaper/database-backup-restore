@@ -68,6 +68,20 @@ class MySqlTest extends TestCase
     }
 
     /** @test */
+    public function it_can_generate_a_dump_command_with_custom_binary_path()
+    {
+        $dumper = MysqlDumper::create()
+            ->setDbName('dbname')
+            ->setUserName('username')
+            ->setPassword('password')
+            ->setCommandBinaryPath('/custom/directory/mysql/bin/')
+            ->dump('dump.sql');
+        $command  = $dumper->getCommand();
+        $tempFile = $dumper->getTempFile();
+        $this->assertSame('/custom/directory/mysql/bin/mysqldump --defaults-extra-file=' . $tempFile . ' dbname --skip-comments > dump.sql', $command);
+    }
+
+    /** @test */
     public function it_can_generate_a_restore_command()
     {
         $dumper = MysqlDumper::create()
