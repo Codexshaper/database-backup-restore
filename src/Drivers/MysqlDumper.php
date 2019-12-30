@@ -114,26 +114,28 @@ class MysqlDumper extends Dumper
             $credentials    = $this->getCredentials();
             $this->tempFile = $tempFile = tempnam(sys_get_temp_dir(), 'mysqlpass');
             $handler        = fopen($tempFile, 'r+');
-            fwrite($handler, $credentials);
+            if ($handler !== false) {
+                fwrite($handler, $credentials);
 
-            if ($action == 'dump') {
-                $dumpCommand   = $this->prepareDumpCommand($tempFile, $filePath);
-                $this->command = $this->removeExtraSpaces($dumpCommand);
-            } else if ($action == 'restore') {
-                $dumpCommand   = $this->prepareRestoreCommand($tempFile, $filePath);
-                $this->command = $this->removeExtraSpaces($dumpCommand);
+                if ($action == 'dump') {
+                    $dumpCommand   = $this->prepareDumpCommand($tempFile, $filePath);
+                    $this->command = $this->removeExtraSpaces($dumpCommand);
+                } else if ($action == 'restore') {
+                    $dumpCommand   = $this->prepareRestoreCommand($tempFile, $filePath);
+                    $this->command = $this->removeExtraSpaces($dumpCommand);
+                }
+
+                $process = $this->prepareProcessCommand();
+
+                if ($this->debug) {
+                    $process->mustRun();
+                } else {
+                    $process->run();
+                }
+
+                fclose($handler);
+                unlink($tempFile);
             }
-
-            $process = $this->prepareProcessCommand();
-
-            if ($this->debug) {
-                $process->mustRun();
-            } else {
-                $process->run();
-            }
-
-            fclose($handler);
-            unlink($tempFile);
 
         } catch (ProcessFailedException $e) {
             throw new \Exception($e->getMessage());
