@@ -9,25 +9,25 @@ class SqliteDumper extends Dumper
     public function dump(string $destinationPath = "")
     {
         $destinationPath = !empty($destinationPath) ? $destinationPath : $this->destinationPath;
-        $this->command   = $this->prepareDumpCommand($destinationPath);
+        $dumpCommand = $this->prepareDumpCommand($destinationPath)
+        $this->command   = $this->removeExtraSpaces($dumpCommand);
         $this->run();
     }
 
     public function restore(string $restorePath = "")
     {
         $restorePath   = !empty($restorePath) ? $restorePath : $this->restorePath;
-        $this->command = $this->prepareRestoreCommand($restorePath);
+        $restoreCommand = $this->prepareRestoreCommand($restorePath);
+        $this->command = $this->removeExtraSpaces($restoreCommand);
         $this->run();
     }
 
     protected function prepareDumpCommand(string $destinationPath): string
     {
-        $databaseArg = escapeshellarg($this->dbName);
-
         $dumpCommand = sprintf(
             "%ssqlite3 %s .dump",
             $this->dumpCommandPath,
-            $databaseArg
+            $this->dbName
         );
 
         if ($this->isCompress) {
@@ -40,15 +40,12 @@ class SqliteDumper extends Dumper
 
     protected function prepareRestoreCommand(string $filePath): string
     {
-        $database = escapeshellarg($this->dbName);
-
         $restoreCommand = sprintf("%ssqlite3 %s",
             $this->dumpCommandPath,
-            $database
+            $this->dbName
         );
 
         if ($this->isCompress) {
-
             return "{$this->compressBinaryPath}{$this->compressCommand} < {$filePath} | {$restoreCommand}";
         }
 

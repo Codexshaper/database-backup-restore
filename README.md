@@ -1,3 +1,4 @@
+[![License](http://img.shields.io/:license-mit-blue.svg?style=flat-square)](http://badges.mit-license.org)
 [![Build Status](https://travis-ci.org/Codexshaper/database-backup-restore.svg?branch=master)](https://travis-ci.org/Codexshaper/database-backup-restore)
 [![Quality Score](https://img.shields.io/scrutinizer/g/Codexshaper/database-backup-restore.svg?style=flat-square)](https://scrutinizer-ci.com/g/Codexshaper/database-backup-restore)
 
@@ -300,8 +301,6 @@ Restore from archive using URI
 * **Md Abu Ahsan Basir** - [github](https://github.com/maab16)
 
 ## License
-
-[![License](http://img.shields.io/:license-mit-blue.svg?style=flat-square)](http://badges.mit-license.org)
 
 - **[MIT license](http://opensource.org/licenses/mit-license.php)**
 - Copyright 2019 © <a href="https://github.com/Codexshaper/database-backup-restore/blob/master/LICENSE" target="_blank">CodexShaper</a>.

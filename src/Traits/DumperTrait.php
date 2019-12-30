@@ -252,4 +252,9 @@ trait DumperTrait
     {
         return $this->tempFile;
     }
+
+    public function removeExtraSpaces(string $str)
+    {
+        return preg_replace('/\s+/', ' ', $str);
+    }
 }

@@ -35,14 +35,16 @@ class MongoDumper extends Dumper
     public function dump(string $destinationPath = "")
     {
         $destinationPath = !empty($destinationPath) ? $destinationPath : $this->destinationPath;
-        $this->command   = $this->prepareDumpCommand($destinationPath);
+        $dumpCommand     = $this->prepareDumpCommand($destinationPath);
+        $this->command   = $this->removeExtraSpaces($dumpCommand);
         $this->run();
     }
 
     public function restore(string $restorePath = "")
     {
-        $restorePath   = !empty($restorePath) ? $restorePath : $this->restorePath;
-        $this->command = $this->prepareRestoreCommand($restorePath);
+        $restorePath    = !empty($restorePath) ? $restorePath : $this->restorePath;
+        $restoreCommand = $this->prepareRestoreCommand($restorePath);
+        $this->command  = $this->removeExtraSpaces($restoreCommand);
         $this->run();
     }
 

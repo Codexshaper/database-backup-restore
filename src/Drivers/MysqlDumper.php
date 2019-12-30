@@ -117,11 +117,11 @@ class MysqlDumper extends Dumper
             fwrite($handler, $credentials);
 
             if ($action == 'dump') {
-                $this->command = preg_replace('/\s+/', ' ', $this->prepareDumpCommand($this->tempFile, $filePath));
-            }
-
-            if ($action == 'restore') {
-                $this->command = preg_replace('/\s+/', ' ', $this->prepareRestoreCommand($this->tempFile, $filePath));
+                $dumpCommand   = $this->prepareDumpCommand($this->tempFile, $filePath);
+                $this->command = $this->removeExtraSpaces($dumpCommand);
+            } else if ($action == 'restore') {
+                $dumpCommand   = $this->prepareRestoreCommand($this->tempFile, $filePath);
+                $this->command = $this->removeExtraSpaces($dumpCommand);
             }
 
             $process = $this->prepareProcessCommand();
@@ -155,13 +155,13 @@ class MysqlDumper extends Dumper
 
     public function prepareDatabase()
     {
-        return $this->dbName;
+        return $this->dbName ? $this->dbName : "";
     }
 
     public function prepareIncludeTables()
     {
-        $includeTables    = (count($this->tables) > 0) ? implode(' ', $this->tables) : "";
-        $includeTablesArg = !empty($includeTables) ? '--tables ' . $includeTables : '';
+        $includeTables    = (count($this->tables) > 0) ? implode(' ', $this->tables) : '';
+        $includeTablesArg = !empty($includeTables) ? "--tables {$includeTables}" : '';
         return $includeTablesArg;
     }
 
@@ -177,17 +177,17 @@ class MysqlDumper extends Dumper
 
     public function prepareSingleTransaction()
     {
-        return $this->singleTransaction ? "--single-transaction" : "";
+        return $this->singleTransaction ? '--single-transaction' : '';
     }
 
     public function prepareSkipLockTables()
     {
-        return $this->skipLockTables ? "--skip-lock-tables" : "";
+        return $this->skipLockTables ? '--skip-lock-tables' : '';
     }
 
     public function prepareQuick()
     {
-        return $this->quick ? "--quick" : "";
+        return $this->quick ? '--quick' : '';
     }
 
     public function prepareCreateTables()
