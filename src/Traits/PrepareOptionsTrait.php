@@ -78,13 +78,41 @@ trait PrepareOptionsTrait
         }
     }
 
-    public function prepareCreateTables()
+    public function getDumpCommand(string $credentialFile = '', $destinationPath = '')
     {
+        $destinationPath = !empty($destinationPath) ? $destinationPath : $this->destinationPath;
         switch (strtolower($this->getDumperClassName())) {
             case 'mysqldumper':
-                return !$this->createTables ? '--no-create-info' : '';
-            case 'pgsqldumper':
-                return (!$this->createTables) ? '--data-only' : '';
+                $dumpCommand = $this->prepareDumpCommand($credentialFile, $destinationPath);
+                break;
+            default:
+                $dumpCommand = $this->prepareDumpCommand($destinationPath);
+                break;
         }
+
+        return $this->removeExtraSpaces($dumpCommand);
+    }
+
+    public function getRestoreCommand(string $credentialFile = '', string $filePath = '')
+    {
+        $filePath = !empty($filePath) ? '"' . $filePath : $this->restorePath;
+        switch (strtolower($this->getDumperClassName())) {
+            case 'mysqldumper':
+                $restoreCommand = $this->prepareRestoreCommand($credentialFile, $filePath);
+                break;
+            default:
+                $restoreCommand = $this->prepareRestoreCommand($filePath);
+                break;
+        }
+
+        return $this->removeExtraSpaces($restoreCommand);
+    }
+
+    public function getDumperClassName()
+    {
+        $classWithNamespace = static::class;
+        $partials           = explode("\\", $classWithNamespace);
+        $className          = end($partials);
+        return $className;
     }
 }

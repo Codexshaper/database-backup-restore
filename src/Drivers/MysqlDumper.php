@@ -172,6 +172,11 @@ class MysqlDumper extends Dumper
         return $this->quick ? '--quick' : '';
     }
 
+    public function prepareCreateTables()
+    {
+        return !$this->createTables ? '--no-create-info' : '';
+    }
+
     public function prepareSkipComments()
     {
         return $this->skipComments ? '--skip-comments' : '';

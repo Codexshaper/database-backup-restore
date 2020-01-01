@@ -108,6 +108,11 @@ class PgsqlDumper extends Dumper
         }
     }
 
+    public function prepareCreateTables()
+    {
+        return (!$this->createTables) ? '--data-only' : '';
+    }
+
     public function prepareUseInserts()
     {
         return ($this->useInserts) ? '--inserts' : '';
