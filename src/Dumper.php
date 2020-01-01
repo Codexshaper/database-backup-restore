@@ -62,7 +62,7 @@ abstract class Dumper implements DumperContract
 
     public function prepareHost()
     {
-        switch (strtolower($this->getClassName())) {
+        switch (strtolower($this->getDumperClassName())) {
             case 'pgsqldumper':
                 $host = ($this->socket !== '') ? $this->socket : $this->host;
                 break;
@@ -78,7 +78,7 @@ abstract class Dumper implements DumperContract
 
     public function preparePort()
     {
-        switch (strtolower($this->getClassName())) {
+        switch (strtolower($this->getDumperClassName())) {
             case 'pgsqldumper':
                 $port = !empty($this->port) ? '-p ' . $this->port : '';
                 break;
@@ -94,7 +94,7 @@ abstract class Dumper implements DumperContract
 
     public function prepareSocket()
     {
-        switch (strtolower($this->getClassName())) {
+        switch (strtolower($this->getDumperClassName())) {
             case 'mysqldumper':
                 $socket = ($this->socket !== '') ? "--socket={$this->socket}" : '';
                 break;
@@ -108,7 +108,7 @@ abstract class Dumper implements DumperContract
 
     public function prepareDatabase()
     {
-        switch (strtolower($this->getClassName())) {
+        switch (strtolower($this->getDumperClassName())) {
             case 'mysqldumper':
             case 'pgsqldumper':
                 $database = !empty($this->dbName) ? $this->dbName : "";
@@ -125,7 +125,7 @@ abstract class Dumper implements DumperContract
 
     public function prepareUserName()
     {
-        switch (strtolower($this->getClassName())) {
+        switch (strtolower($this->getDumperClassName())) {
             case 'pgsqldumper':
                 $username = !empty($this->username) ? $this->username : "";
                 break;
@@ -141,7 +141,7 @@ abstract class Dumper implements DumperContract
 
     public function prepareIncludeTables()
     {
-        switch (strtolower($this->getClassName())) {
+        switch (strtolower($this->getDumperClassName())) {
             case 'mysqldumper':
                 $includeTables    = (count($this->tables) > 0) ? implode(' ', $this->tables) : '';
                 $includeTablesArg = !empty($includeTables) ? "--tables {$includeTables}" : '';
@@ -159,7 +159,7 @@ abstract class Dumper implements DumperContract
 
     public function prepareIgnoreTables()
     {
-        switch (strtolower($this->getClassName())) {
+        switch (strtolower($this->getDumperClassName())) {
             case 'mysqldumper':
                 $ignoreTablesArgs = [];
                 foreach ($this->ignoreTables as $tableName) {
@@ -180,7 +180,7 @@ abstract class Dumper implements DumperContract
 
     public function prepareCreateTables()
     {
-        switch (strtolower($this->getClassName())) {
+        switch (strtolower($this->getDumperClassName())) {
             case 'mysqldumper':
                 $createTables = !$this->createTables ? '--no-create-info' : '';
                 break;
