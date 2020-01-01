@@ -232,4 +232,57 @@ trait DumperTrait
     {
         return $this->restorePath;
     }
+
+    public function getDumpCommand(string $credentialFile = '', $destinationPath = '')
+    {
+        $destinationPath = !empty($destinationPath) ? $destinationPath : $this->destinationPath;
+        switch (strtolower($this->getDumperClassName())) {
+            case 'mysqldumper':
+                $dumpCommand = $this->prepareDumpCommand($credentialFile, $destinationPath);
+                break;
+            default:
+                $dumpCommand = $this->prepareDumpCommand($destinationPath);
+                break;
+        }
+
+        return $this->removeExtraSpaces($dumpCommand);
+    }
+
+    public function getRestoreCommand(string $credentialFile = '', string $filePath = '')
+    {
+        $filePath = !empty($filePath) ? '"' . $filePath : $this->restorePath;
+        switch (strtolower($this->getDumperClassName())) {
+            case 'mysqldumper':
+                $restoreCommand = $this->prepareRestoreCommand($credentialFile, $filePath);
+                break;
+            default:
+                $restoreCommand = $this->prepareRestoreCommand($filePath);
+                break;
+        }
+
+        return $this->removeExtraSpaces($restoreCommand);
+    }
+
+    public function removeExtraSpaces(string $str)
+    {
+        return preg_replace('/\s+/', ' ', $str);
+    }
+
+    public static function isWindows()
+    {
+        return strcasecmp(substr(PHP_OS, 0, 3), 'WIN') == 0 ? true : false;
+    }
+
+    public function quoteCommand(string $command)
+    {
+        return static::isWindows() ? "\"{$command}\"" : "'{$command}'";
+    }
+
+    public function getDumperClassName()
+    {
+        $classWithNamespace = static::class;
+        $partials           = explode("\\", $classWithNamespace);
+        $className          = end($partials);
+        return $className;
+    }
 }

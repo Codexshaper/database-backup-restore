@@ -64,46 +64,28 @@ abstract class Dumper implements DumperContract
     {
         switch (strtolower($this->getDumperClassName())) {
             case 'pgsqldumper':
-                $host = ($this->socket !== '') ? $this->socket : $this->host;
-                break;
+                return ($this->socket !== '') ? $this->socket : $this->host;
             case 'mongodumper';
-                $host = !empty($this->host) ? "--host {$this->host}" : "";
-                break;
-            default:
-                $host = $this->host;
-                break;
+                return !empty($this->host) ? "--host {$this->host}" : "";
         }
-        return $host;
     }
 
     public function preparePort()
     {
         switch (strtolower($this->getDumperClassName())) {
             case 'pgsqldumper':
-                $port = !empty($this->port) ? '-p ' . $this->port : '';
-                break;
+                return !empty($this->port) ? '-p ' . $this->port : '';
             case 'mongodumper':
-                $port = !empty($this->port) ? "--port {$this->port}" : "";
-                break;
-            default:
-                $port = $this->port;
-                break;
+                return !empty($this->port) ? "--port {$this->port}" : "";
         }
-        return $port;
     }
 
     public function prepareSocket()
     {
         switch (strtolower($this->getDumperClassName())) {
             case 'mysqldumper':
-                $socket = ($this->socket !== '') ? "--socket={$this->socket}" : '';
-                break;
-            default:
-                $socket = $this->socket;
-                break;
+                return ($this->socket !== '') ? "--socket={$this->socket}" : '';
         }
-
-        return $socket;
     }
 
     public function prepareDatabase()
@@ -111,50 +93,31 @@ abstract class Dumper implements DumperContract
         switch (strtolower($this->getDumperClassName())) {
             case 'mysqldumper':
             case 'pgsqldumper':
-                $database = !empty($this->dbName) ? $this->dbName : "";
-                break;
+                return !empty($this->dbName) ? $this->dbName : "";
             case 'mongodumper';
-                $database = !empty($this->dbName) ? "--db {$this->dbName}" : "";
-                break;
-            default:
-                $database = $this->dbName;
-                break;
+                return !empty($this->dbName) ? "--db {$this->dbName}" : "";
         }
-        return $database;
     }
 
     public function prepareUserName()
     {
         switch (strtolower($this->getDumperClassName())) {
             case 'pgsqldumper':
-                $username = !empty($this->username) ? $this->username : "";
-                break;
+                return !empty($this->username) ? $this->username : "";
             case 'mongodumper';
-                $username = !empty($this->username) ? "--username {$this->username}" : "";
-                break;
-            default:
-                $username = $this->username;
-                break;
+                return !empty($this->username) ? "--username {$this->username}" : "";
         }
-        return $username;
     }
 
     public function prepareIncludeTables()
     {
         switch (strtolower($this->getDumperClassName())) {
             case 'mysqldumper':
-                $includeTables    = (count($this->tables) > 0) ? implode(' ', $this->tables) : '';
-                $includeTablesArg = !empty($includeTables) ? "--tables {$includeTables}" : '';
-                break;
+                $includeTables = (count($this->tables) > 0) ? implode(' ', $this->tables) : '';
+                return !empty($includeTables) ? "--tables {$includeTables}" : '';
             case 'pgsqldumper':
-                $includeTablesArg = (count($this->tables) > 0) ? '-t ' . implode(' -t ', $this->tables) : "";
-                break;
-            default:
-                $includeTablesArg = $this->tables;
-                break;
+                return (count($this->tables) > 0) ? '-t ' . implode(' -t ', $this->tables) : "";
         }
-
-        return $includeTablesArg;
     }
 
     public function prepareIgnoreTables()
@@ -165,85 +128,19 @@ abstract class Dumper implements DumperContract
                 foreach ($this->ignoreTables as $tableName) {
                     $ignoreTablesArgs[] = "--ignore-table={$this->dbName}.{$tableName}";
                 }
-                $ignoreTablesArg = (count($ignoreTablesArgs) > 0) ? implode(' ', $ignoreTablesArgs) : '';
-                break;
+                return (count($ignoreTablesArgs) > 0) ? implode(' ', $ignoreTablesArgs) : '';
             case 'pgsqldumper';
-                $ignoreTablesArg = (count($this->ignoreTables) > 0) ? '-T ' . implode(' -T ', $this->ignoreTables) : '';
-                break;
-            default:
-                $ignoreTablesArg = $this->ignoreTables;
-                break;
+                return (count($this->ignoreTables) > 0) ? '-T ' . implode(' -T ', $this->ignoreTables) : '';
         }
-
-        return $ignoreTablesArg;
     }
 
     public function prepareCreateTables()
     {
         switch (strtolower($this->getDumperClassName())) {
             case 'mysqldumper':
-                $createTables = !$this->createTables ? '--no-create-info' : '';
-                break;
+                return !$this->createTables ? '--no-create-info' : '';
             case 'pgsqldumper':
-                $createTables = (!$this->createTables) ? '--data-only' : '';
-                break;
-            default:
-                $createTables = $this->createTables;
-                break;
+                return (!$this->createTables) ? '--data-only' : '';
         }
-        return $createTables;
-    }
-
-    public function getDumpCommand(string $credentialFile = '', $destinationPath = '')
-    {
-        $destinationPath = !empty($destinationPath) ? $destinationPath : $this->destinationPath;
-        switch (strtolower($this->getDumperClassName())) {
-            case 'mysqldumper':
-                $dumpCommand = $this->prepareDumpCommand($credentialFile, $destinationPath);
-                break;
-            default:
-                $dumpCommand = $this->prepareDumpCommand($destinationPath);
-                break;
-        }
-
-        return $this->removeExtraSpaces($dumpCommand);
-    }
-
-    public function getRestoreCommand(string $credentialFile = '', string $filePath = '')
-    {
-        $filePath = !empty($filePath) ? '"' . $filePath : $this->restorePath;
-        switch (strtolower($this->getDumperClassName())) {
-            case 'mysqldumper':
-                $restoreCommand = $this->prepareRestoreCommand($credentialFile, $filePath);
-                break;
-            default:
-                $restoreCommand = $this->prepareRestoreCommand($filePath);
-                break;
-        }
-
-        return $this->removeExtraSpaces($restoreCommand);
-    }
-
-    public function removeExtraSpaces(string $str)
-    {
-        return preg_replace('/\s+/', ' ', $str);
-    }
-
-    public static function isWindows()
-    {
-        return strcasecmp(substr(PHP_OS, 0, 3), 'WIN') == 0 ? true : false;
-    }
-
-    public function quoteCommand(string $command)
-    {
-        return static::isWindows() ? "\"{$command}\"" : "'{$command}'";
-    }
-
-    public function getDumperClassName()
-    {
-        $classWithNamespace = static::class;
-        $partials           = explode("\\", $classWithNamespace);
-        $className          = end($partials);
-        return $className;
     }
 }
