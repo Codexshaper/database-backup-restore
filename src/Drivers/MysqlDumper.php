@@ -65,6 +65,22 @@ class MysqlDumper extends Dumper
         return $this;
     }
 
+    public function getDumpCommand(string $credentialFile = '', $destinationPath = '')
+    {
+        $destinationPath = !empty($destinationPath) ? $destinationPath : $this->destinationPath;
+        $dumpCommand     = $this->prepareDumpCommand($credentialFile, $destinationPath);
+
+        return $this->removeExtraSpaces($dumpCommand);
+    }
+
+    public function getRestoreCommand(string $credentialFile = '', string $filePath = '')
+    {
+        $filePath       = !empty($filePath) ? '"' . $filePath : $this->restorePath;
+        $restoreCommand = $this->prepareRestoreCommand($credentialFile, $filePath);
+
+        return $this->removeExtraSpaces($restoreCommand);
+    }
+
     protected function prepareDumpCommand(string $credentialFile, string $destinationPath): string
     {
         $dumpCommand = sprintf(

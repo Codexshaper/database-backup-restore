@@ -48,6 +48,22 @@ class MongoDumper extends Dumper
         $this->run();
     }
 
+    public function getDumpCommand($destinationPath = '')
+    {
+        $destinationPath = !empty($destinationPath) ? $destinationPath : $this->destinationPath;
+        $dumpCommand     = $this->prepareDumpCommand($destinationPath);
+
+        return $this->removeExtraSpaces($dumpCommand);
+    }
+
+    public function getRestoreCommand(string $filePath = '')
+    {
+        $filePath       = !empty($filePath) ? '"' . $filePath : $this->restorePath;
+        $restoreCommand = $this->prepareRestoreCommand($filePath);
+
+        return $this->removeExtraSpaces($restoreCommand);
+    }
+
     protected function prepareDumpCommand(string $destinationPath): string
     {
         $archive = $this->isCompress ? "--archive --gzip" : "";

@@ -77,4 +77,12 @@ trait PrepareOptionsTrait
                 return (count($this->ignoreTables) > 0) ? '-T ' . implode(' -T ', $this->ignoreTables) : '';
         }
     }
+
+    public function getDumperClassName()
+    {
+        $classWithNamespace = static::class;
+        $partials           = explode("\\", $classWithNamespace);
+        $className          = end($partials);
+        return $className;
+    }
 }
