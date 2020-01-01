@@ -4,12 +4,13 @@ namespace CodexShaper\Dumper;
 
 use CodexShaper\Dumper\Contracts\Dumper as DumperContract;
 use CodexShaper\Dumper\Traits\DumperTrait;
+use CodexShaper\Dumper\Traits\PrepareOptionsTrait;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
 abstract class Dumper implements DumperContract
 {
-    use DumperTrait;
+    use DumperTrait, PrepareOptionsTrait;
 
     public function __construct(array $options = [])
     {
@@ -60,90 +61,6 @@ abstract class Dumper implements DumperContract
     abstract public function dump();
     abstract public function restore();
 
-    public function prepareHost()
-    {
-        switch (strtolower($this->getDumperClassName())) {
-            case 'pgsqldumper':
-                return ($this->socket !== '') ? $this->socket : $this->host;
-            case 'mongodumper';
-                return !empty($this->host) ? "--host {$this->host}" : "";
-        }
-    }
-
-    public function preparePort()
-    {
-        switch (strtolower($this->getDumperClassName())) {
-            case 'pgsqldumper':
-                return !empty($this->port) ? '-p ' . $this->port : '';
-            case 'mongodumper':
-                return !empty($this->port) ? "--port {$this->port}" : "";
-        }
-    }
-
-    public function prepareSocket()
-    {
-        switch (strtolower($this->getDumperClassName())) {
-            case 'mysqldumper':
-                return ($this->socket !== '') ? "--socket={$this->socket}" : '';
-        }
-    }
-
-    public function prepareDatabase()
-    {
-        switch (strtolower($this->getDumperClassName())) {
-            case 'mysqldumper':
-            case 'pgsqldumper':
-                return !empty($this->dbName) ? $this->dbName : "";
-            case 'mongodumper';
-                return !empty($this->dbName) ? "--db {$this->dbName}" : "";
-        }
-    }
-
-    public function prepareUserName()
-    {
-        switch (strtolower($this->getDumperClassName())) {
-            case 'pgsqldumper':
-                return !empty($this->username) ? $this->username : "";
-            case 'mongodumper';
-                return !empty($this->username) ? "--username {$this->username}" : "";
-        }
-    }
-
-    public function prepareIncludeTables()
-    {
-        switch (strtolower($this->getDumperClassName())) {
-            case 'mysqldumper':
-                $includeTables = (count($this->tables) > 0) ? implode(' ', $this->tables) : '';
-                return !empty($includeTables) ? "--tables {$includeTables}" : '';
-            case 'pgsqldumper':
-                return (count($this->tables) > 0) ? '-t ' . implode(' -t ', $this->tables) : "";
-        }
-    }
-
-    public function prepareIgnoreTables()
-    {
-        switch (strtolower($this->getDumperClassName())) {
-            case 'mysqldumper':
-                $ignoreTablesArgs = [];
-                foreach ($this->ignoreTables as $tableName) {
-                    $ignoreTablesArgs[] = "--ignore-table={$this->dbName}.{$tableName}";
-                }
-                return (count($ignoreTablesArgs) > 0) ? implode(' ', $ignoreTablesArgs) : '';
-            case 'pgsqldumper';
-                return (count($this->ignoreTables) > 0) ? '-T ' . implode(' -T ', $this->ignoreTables) : '';
-        }
-    }
-
-    public function prepareCreateTables()
-    {
-        switch (strtolower($this->getDumperClassName())) {
-            case 'mysqldumper':
-                return !$this->createTables ? '--no-create-info' : '';
-            case 'pgsqldumper':
-                return (!$this->createTables) ? '--data-only' : '';
-        }
-    }
-
     public function getDumpCommand(string $credentialFile = '', $destinationPath = '')
     {
         $destinationPath = !empty($destinationPath) ? $destinationPath : $this->destinationPath;
@@ -180,5 +97,20 @@ abstract class Dumper implements DumperContract
         $partials           = explode("\\", $classWithNamespace);
         $className          = end($partials);
         return $className;
+    }
+
+    public function removeExtraSpaces(string $str)
+    {
+        return preg_replace('/\s+/', ' ', $str);
+    }
+
+    public static function isWindows()
+    {
+        return strcasecmp(substr(PHP_OS, 0, 3), 'WIN') == 0 ? true : false;
+    }
+
+    public function quoteCommand(string $command)
+    {
+        return static::isWindows() ? "\"{$command}\"" : "'{$command}'";
     }
 }
