@@ -28,8 +28,6 @@ trait DumperTrait
     protected $destinationPath = 'dump.sql';
     /*@var string*/
     protected $restorePath = 'dump.sql';
-    /*@var string*/
-    protected $tempFile = "";
     /*@var bool*/
     protected $isCompress = false;
     /*@var string*/
@@ -79,7 +77,7 @@ trait DumperTrait
 
     public function setSocket(string $socket)
     {
-        $this->port = $port;
+        $this->socket = $socket;
 
         return $this;
     }
@@ -220,7 +218,7 @@ trait DumperTrait
 
     public function getSocket()
     {
-        return $this->port;
+        return $this->socket;
     }
 
     public function getTimeOut()
@@ -243,18 +241,48 @@ trait DumperTrait
         return $this->restorePath;
     }
 
-    public function getCommand()
+    public function getDumpCommand(string $credentialFile = '', $destinationPath = '')
     {
-        return $this->command;
+        $destinationPath = !empty($destinationPath) ? $destinationPath : $this->destinationPath;
+        switch (strtolower($this->getClassName())) {
+            case 'mysqldumper':
+                $dumpCommand = $this->prepareDumpCommand($credentialFile, $destinationPath);
+                break;
+            default:
+                $dumpCommand = $this->prepareDumpCommand($destinationPath);
+                break;
+        }
+
+        return $this->removeExtraSpaces($dumpCommand);
     }
 
-    public function getTempFile()
+    public function getRestoreCommand(string $credentialFile = '', string $filePath = '')
     {
-        return $this->tempFile;
+        $filePath = !empty($filePath) ? '"' . $filePath : $this->restorePath;
+        switch (strtolower($this->getClassName())) {
+            case 'mysqldumper':
+                $restoreCommand = $this->prepareRestoreCommand($credentialFile, $filePath);
+                break;
+            default:
+                $restoreCommand = $this->prepareRestoreCommand($filePath);
+                break;
+        }
+
+        return $this->removeExtraSpaces($restoreCommand);
     }
 
     public function removeExtraSpaces(string $str)
     {
         return preg_replace('/\s+/', ' ', $str);
+    }
+
+    public static function isWindows()
+    {
+        return strcasecmp(substr(PHP_OS, 0, 3), 'WIN') == 0 ? true : false;
+    }
+
+    public function quoteCommand(string $command)
+    {
+        return static::isWindows() ? "\"{$command}\"" : "'{$command}'";
     }
 }

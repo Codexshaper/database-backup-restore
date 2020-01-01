@@ -40,7 +40,7 @@ class MysqlDumper extends Dumper
         $this->skipComments = false;
         return $this;
     }
-    public function doNotUseCreateTables()
+    public function doNotCreateTables()
     {
         $this->createTables = false;
         return $this;
@@ -68,10 +68,9 @@ class MysqlDumper extends Dumper
     protected function prepareDumpCommand(string $credentialFile, string $destinationPath): string
     {
         $dumpCommand = sprintf(
-            '%smysqldump %s %s %s %s %s %s %s %s %s %s %s',
-            $this->commandBinaryPath,
+            '%s %s %s %s %s %s %s %s %s %s %s %s',
+            $this->quoteCommand("{$this->commandBinaryPath}mysqldump"),
             $this->prepareAuthentication($credentialFile),
-            $this->prepareDatabase(),
             $this->prepareSocket(),
             $this->prepareSkipComments(),
             $this->prepareCreateTables(),
@@ -79,49 +78,52 @@ class MysqlDumper extends Dumper
             $this->prepareSkipLockTables(),
             $this->prepareQuick(),
             $this->prepareDefaultCharSet(),
+            $this->prepareDatabase(),
             $this->prepareIncludeTables(),
             $this->prepareIgnoreTables()
         );
 
         if ($this->isCompress) {
-
-            return "{$dumpCommand} | {$this->compressBinaryPath}{$this->compressCommand} > {$destinationPath}{$this->compressExtension}";
+            $compressCommand = $this->quoteCommand("{$this->compressBinaryPath}{$this->compressCommand}");
+            return "{$dumpCommand} | {$compressCommand} > \"{$destinationPath}{$this->compressExtension}\"";
         }
 
-        return "{$dumpCommand} > {$destinationPath}";
+        return "{$dumpCommand} > \"{$destinationPath}\"";
     }
 
     protected function prepareRestoreCommand(string $credentialFile, string $filePath): string
     {
-        $restoreCommand = sprintf("%smysql %s %s",
-            $this->commandBinaryPath,
+        $restoreCommand = sprintf("%s %s %s",
+            $this->quoteCommand("{$this->commandBinaryPath}mysql"),
             $this->prepareAuthentication($credentialFile),
             $this->prepareDatabase()
         );
 
         if ($this->isCompress) {
 
-            return "{$this->compressBinaryPath}{$this->compressCommand} < {$filePath} | {$restoreCommand}";
+            $compressCommand = $this->quoteCommand("{$this->compressBinaryPath}{$this->compressCommand}");
+
+            return "{$compressCommand} < \"{$filePath}\" | {$restoreCommand}";
         }
 
-        return "{$restoreCommand} < {$filePath}";
+        return "{$restoreCommand} < \"{$filePath}\"";
     }
 
     protected function runCommand($filePath, $action)
     {
         try {
 
-            $credentials    = $this->getCredentials();
-            $this->tempFile = tempnam(sys_get_temp_dir(), 'mysqlpass');
-            $handler        = fopen($this->tempFile, 'r+');
+            $credentials = $this->getCredentials();
+            $tempFile    = tempnam(sys_get_temp_dir(), 'mysqlpass');
+            $handler     = fopen($tempFile, 'r+');
             if ($handler !== false) {
                 fwrite($handler, $credentials);
 
                 if ($action == 'dump') {
-                    $dumpCommand   = $this->prepareDumpCommand($this->tempFile, $filePath);
+                    $dumpCommand   = $this->prepareDumpCommand($tempFile, $filePath);
                     $this->command = $this->removeExtraSpaces($dumpCommand);
                 } else if ($action == 'restore') {
-                    $dumpCommand   = $this->prepareRestoreCommand($this->tempFile, $filePath);
+                    $dumpCommand   = $this->prepareRestoreCommand($tempFile, $filePath);
                     $this->command = $this->removeExtraSpaces($dumpCommand);
                 }
 
@@ -134,7 +136,7 @@ class MysqlDumper extends Dumper
                 }
 
                 fclose($handler);
-                unlink($this->tempFile);
+                unlink($tempFile);
             }
 
         } catch (ProcessFailedException $e) {
@@ -155,28 +157,6 @@ class MysqlDumper extends Dumper
         return implode(PHP_EOL, $contents);
     }
 
-    public function prepareDatabase()
-    {
-        return $this->dbName ? $this->dbName : "";
-    }
-
-    public function prepareIncludeTables()
-    {
-        $includeTables    = (count($this->tables) > 0) ? implode(' ', $this->tables) : '';
-        $includeTablesArg = !empty($includeTables) ? "--tables {$includeTables}" : '';
-        return $includeTablesArg;
-    }
-
-    public function prepareIgnoreTables()
-    {
-        $ignoreTablesArgs = [];
-        foreach ($this->ignoreTables as $tableName) {
-            $ignoreTablesArgs[] = "--ignore-table={$this->dbName}.{$tableName}";
-        }
-        $ignoreTablesArg = (count($ignoreTablesArgs) > 0) ? implode(' ', $ignoreTablesArgs) : '';
-        return $ignoreTablesArg;
-    }
-
     public function prepareSingleTransaction()
     {
         return $this->singleTransaction ? '--single-transaction' : '';
@@ -192,19 +172,9 @@ class MysqlDumper extends Dumper
         return $this->quick ? '--quick' : '';
     }
 
-    public function prepareCreateTables()
-    {
-        return !$this->createTables ? '--no-create-info' : '';
-    }
-
     public function prepareSkipComments()
     {
         return $this->skipComments ? '--skip-comments' : '';
-    }
-
-    public function prepareSocket()
-    {
-        return ($this->socket !== '') ? "--socket={$this->socket}" : '';
     }
 
     public function prepareDefaultCharSet()
@@ -214,6 +184,6 @@ class MysqlDumper extends Dumper
 
     public function prepareAuthentication(string $credentialFile)
     {
-        return "--defaults-extra-file={$credentialFile}";
+        return "--defaults-extra-file=\"{$credentialFile}\"";
     }
 }

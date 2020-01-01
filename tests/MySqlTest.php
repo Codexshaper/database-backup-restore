@@ -3,10 +3,20 @@
 namespace CodexShaper\Dumper\Test;
 
 use CodexShaper\Dumper\Drivers\MysqlDumper;
+use CodexShaper\Dumper\Dumper;
 use PHPUnit\Framework\TestCase;
 
-class MySqlTest extends TestCase
+class MysqlTest extends TestCase
 {
+    protected $credentialFile = 'credentials.temp';
+    protected $quote          = "'";
+
+    public function __construct()
+    {
+        parent::__construct();
+        $isWindows   = Dumper::isWindows();
+        $this->quote = $isWindows ? '"' : "'";
+    }
     /** @test */
     public function it_provides_a_factory_method()
     {
@@ -14,111 +24,239 @@ class MySqlTest extends TestCase
     }
 
     /** @test */
-    public function it_can_generate_a_dump_command()
+    public function it_will_make_a_dump_command()
     {
-        $dumper = MysqlDumper::create()
+        $command = MysqlDumper::create()
             ->setDbName('dbname')
             ->setUserName('username')
             ->setPassword('password')
-            ->dump('dump.sql');
-        $tempFile = $dumper->getTempFile();
-        $command  = $dumper->getCommand();
-        $this->assertSame('mysqldump --defaults-extra-file=' . $tempFile . ' dbname --skip-comments > dump.sql', $command);
+            ->setDestinationPath('dump.sql')
+            ->getDumpCommand($this->credentialFile);
+        $this->assertSame("{$this->quote}mysqldump{$this->quote} --defaults-extra-file=\"{$this->credentialFile}\" --skip-comments dbname > \"dump.sql\"", $command);
     }
 
     /** @test */
-    public function it_can_generate_a_dump_command_with_compression_enabled()
+    public function it_will_make_a_dump_command_with_compression_enabled()
     {
-        $dumper = MysqlDumper::create()
+        $command = MysqlDumper::create()
             ->setDbName('dbname')
             ->setUserName('username')
             ->setPassword('password')
             ->useCompress()
-            ->dump('dump.sql');
-        $command  = $dumper->getCommand();
-        $tempFile = $dumper->getTempFile();
-        $this->assertSame('mysqldump --defaults-extra-file=' . $tempFile . ' dbname --skip-comments | gzip > dump.sql.gz', $command);
+            ->setDestinationPath('dump.sql')
+            ->getDumpCommand($this->credentialFile);
+        $this->assertSame("{$this->quote}mysqldump{$this->quote} --defaults-extra-file=\"{$this->credentialFile}\" --skip-comments dbname | {$this->quote}gzip{$this->quote} > \"dump.sql.gz\"", $command);
     }
 
     /** @test */
-    public function it_can_generate_a_dump_command_with_absolute_path()
+    public function it_will_make_a_dump_command_with_absolute_path()
     {
-        $dumper = MysqlDumper::create()
+        $command = MysqlDumper::create()
             ->setDbName('dbname')
             ->setUserName('username')
             ->setPassword('password')
-            ->dump('/path/to/directory/dump.sql');
-        $command  = $dumper->getCommand();
-        $tempFile = $dumper->getTempFile();
-        $this->assertSame('mysqldump --defaults-extra-file=' . $tempFile . ' dbname --skip-comments > /path/to/directory/dump.sql', $command);
+            ->setDestinationPath('/path/to/mysql/dump.sql')
+            ->getDumpCommand($this->credentialFile);
+        $this->assertSame("{$this->quote}mysqldump{$this->quote} --defaults-extra-file=\"{$this->credentialFile}\" --skip-comments dbname > \"/path/to/mysql/dump.sql\"", $command);
     }
 
     /** @test */
-    public function it_can_generate_a_dump_command_without_using_comments()
+    public function it_will_make_a_dump_command_without_using_comments()
     {
-        $dumper = MysqlDumper::create()
+        $command = MysqlDumper::create()
             ->setDbName('dbname')
             ->setUserName('username')
             ->setPassword('password')
             ->doNotUseSkipComments()
-            ->dump('dump.sql');
-        $tempFile = $dumper->getTempFile();
-        $command  = $dumper->getCommand();
-        $this->assertSame('mysqldump --defaults-extra-file=' . $tempFile . ' dbname > dump.sql', $command);
+            ->setDestinationPath('dump.sql')
+            ->getDumpCommand($this->credentialFile);
+        $this->assertSame("{$this->quote}mysqldump{$this->quote} --defaults-extra-file=\"{$this->credentialFile}\" dbname > \"dump.sql\"", $command);
     }
 
     /** @test */
-    public function it_can_generate_a_dump_command_with_custom_binary_path()
+    public function it_will_make_a_dump_command_with_custom_binary_path()
     {
-        $dumper = MysqlDumper::create()
+        $command = MysqlDumper::create()
             ->setDbName('dbname')
             ->setUserName('username')
             ->setPassword('password')
-            ->setCommandBinaryPath('/custom/directory/mysql/bin/')
-            ->dump('dump.sql');
-        $command  = $dumper->getCommand();
-        $tempFile = $dumper->getTempFile();
-        $this->assertSame('/custom/directory/mysql/bin/mysqldump --defaults-extra-file=' . $tempFile . ' dbname --skip-comments > dump.sql', $command);
+            ->setCommandBinaryPath('/custom/mysql/mysql/bin/')
+            ->setDestinationPath('dump.sql')
+            ->getDumpCommand($this->credentialFile);
+        $this->assertSame("{$this->quote}/custom/mysql/mysql/bin/mysqldump{$this->quote} --defaults-extra-file=\"{$this->credentialFile}\" --skip-comments dbname > \"dump.sql\"", $command);
     }
 
     /** @test */
-    public function it_can_generate_a_restore_command()
+    public function it_will_make_a_dump_command_using_single_transaction()
     {
-        $dumper = MysqlDumper::create()
+        $command = MysqlDumper::create()
             ->setDbName('dbname')
             ->setUserName('username')
             ->setPassword('password')
-            ->restore('dump.sql');
-        $tempFile = $dumper->getTempFile();
-        $command  = $dumper->getCommand();
-
-        $this->assertSame('mysql --defaults-extra-file=' . $tempFile . ' dbname < dump.sql', $command);
+            ->useSingleTransaction()
+            ->setDestinationPath('dump.sql')
+            ->getDumpCommand($this->credentialFile);
+        $this->assertSame("{$this->quote}mysqldump{$this->quote} --defaults-extra-file=\"{$this->credentialFile}\" --skip-comments --single-transaction dbname > \"dump.sql\"", $command);
     }
 
     /** @test */
-    public function it_can_generate_a_restore_command_with_compression_enabled()
+    public function it_will_make_a_dump_command_using_skip_lock_tables()
     {
-        $dumper = MysqlDumper::create()
+        $command = MysqlDumper::create()
             ->setDbName('dbname')
             ->setUserName('username')
             ->setPassword('password')
-            ->useCompress()
-            ->restore('dump.sql.gz');
-        $command  = $dumper->getCommand();
-        $tempFile = $dumper->getTempFile();
-        $this->assertSame('gzip < dump.sql.gz | mysql --defaults-extra-file=' . $tempFile . ' dbname', $command);
+            ->useSkipLockTables()
+            ->setDestinationPath('dump.sql')
+            ->getDumpCommand($this->credentialFile);
+        $this->assertSame("{$this->quote}mysqldump{$this->quote} --defaults-extra-file=\"{$this->credentialFile}\" --skip-comments --skip-lock-tables dbname > \"dump.sql\"", $command);
     }
 
     /** @test */
-    public function it_can_generate_a_restore_command_with_absolute_path()
+    public function it_will_make_a_dump_command_using_quick()
     {
-        $dumper = MysqlDumper::create()
+        $command = MysqlDumper::create()
             ->setDbName('dbname')
             ->setUserName('username')
             ->setPassword('password')
-            ->restore('/path/to/directory/dump.sql');
-        $command  = $dumper->getCommand();
-        $tempFile = $dumper->getTempFile();
-        $this->assertSame('mysql --defaults-extra-file=' . $tempFile . ' dbname < /path/to/directory/dump.sql', $command);
+            ->useQuick()
+            ->setDestinationPath('dump.sql')
+            ->getDumpCommand($this->credentialFile);
+
+        $this->assertSame("{$this->quote}mysqldump{$this->quote} --defaults-extra-file=\"{$this->credentialFile}\" --skip-comments --quick dbname > \"dump.sql\"", $command);
+    }
+
+    /** @test */
+    public function it_will_make_a_dump_command_with_a_custom_socket()
+    {
+        $command = MysqlDumper::create()
+            ->setDbName('dbname')
+            ->setUserName('username')
+            ->setPassword('password')
+            ->setSocket(1111)
+            ->setDestinationPath('dump.sql')
+            ->getDumpCommand($this->credentialFile);
+        $this->assertSame("{$this->quote}mysqldump{$this->quote} --defaults-extra-file=\"{$this->credentialFile}\" --socket=1111 --skip-comments dbname > \"dump.sql\"", $command);
+    }
+
+    /** @test */
+    public function it_will_make_a_dump_command_for_multiple_table()
+    {
+        $command = MysqlDumper::create()
+            ->setDbName('dbname')
+            ->setUserName('username')
+            ->setPassword('password')
+            ->setTables(['test1', 'test2'])
+            ->setDestinationPath('dump.sql')
+            ->getDumpCommand($this->credentialFile);
+        $this->assertSame("{$this->quote}mysqldump{$this->quote} --defaults-extra-file=\"{$this->credentialFile}\" --skip-comments dbname --tables test1 test2 > \"dump.sql\"", $command);
+    }
+
+    /** @test */
+    public function it_will_make_a_dump_command_for_single_table()
+    {
+        $command = MysqlDumper::create()
+            ->setDbName('dbname')
+            ->setUserName('username')
+            ->setPassword('password')
+            ->setTables('test')
+            ->setDestinationPath('dump.sql')
+            ->getDumpCommand($this->credentialFile);
+        $this->assertSame("{$this->quote}mysqldump{$this->quote} --defaults-extra-file=\"{$this->credentialFile}\" --skip-comments dbname --tables test > \"dump.sql\"", $command);
+    }
+
+    /** @test */
+    public function it_will_make_a_dump_command_for_ignore_multiple_table()
+    {
+        $command = MysqlDumper::create()
+            ->setDbName('dbname')
+            ->setUserName('username')
+            ->setPassword('password')
+            ->setIgnoreTables(['test1', 'test2'])
+            ->setDestinationPath('dump.sql')
+            ->getDumpCommand($this->credentialFile);
+        $this->assertSame("{$this->quote}mysqldump{$this->quote} --defaults-extra-file=\"{$this->credentialFile}\" --skip-comments dbname --ignore-table=dbname.test1 --ignore-table=dbname.test2 > \"dump.sql\"", $command);
+    }
+
+    /** @test */
+    public function it_will_make_a_dump_command_for_ignore_single_table()
+    {
+        $command = MysqlDumper::create()
+            ->setDbName('dbname')
+            ->setUserName('username')
+            ->setPassword('password')
+            ->setIgnoreTables('test')
+            ->setDestinationPath('dump.sql')
+            ->getDumpCommand($this->credentialFile);
+        $this->assertSame("{$this->quote}mysqldump{$this->quote} --defaults-extra-file=\"{$this->credentialFile}\" --skip-comments dbname --ignore-table=dbname.test > \"dump.sql\"", $command);
+    }
+
+    /** @test */
+    public function it_will_throw_an_exception_when_setting_tables_and_ignore_tables_together()
+    {
+        $this->expectException(\Exception::class);
+        $command = MysqlDumper::create()
+            ->setDbName('dbname')
+            ->setUserName('username')
+            ->setPassword('password')
+            ->setTables(['test1', 'test2'])
+            ->setIgnoreTables(['test3', 'test4'])
+            ->setDestinationPath('dump.sql')
+            ->getDumpCommand($this->credentialFile);
+    }
+
+    /** @test */
+    public function it_will_make_a_dump_command_with_no_create_info()
+    {
+        $dumpCommand = MysqlDumper::create()
+            ->setDbName('dbname')
+            ->setUserName('username')
+            ->setPassword('password')
+            ->doNotCreateTables()
+            ->setDestinationPath('dump.sql')
+            ->getDumpCommand($this->credentialFile);
+
+        $this->assertSame("{$this->quote}mysqldump{$this->quote} --defaults-extra-file=\"{$this->credentialFile}\" --skip-comments --no-create-info dbname > \"dump.sql\"", $dumpCommand);
+    }
+
+    /*
+     * Restore Testing
+     */
+
+    /** @test */
+    public function it_will_make_a_restore_command()
+    {
+        $command = MysqlDumper::create()
+            ->setDbName('dbname')
+            ->setUserName('username')
+            ->setPassword('password')
+            ->setRestorePath('dump.sql')
+            ->getRestoreCommand($this->credentialFile);
+        $this->assertSame("{$this->quote}mysql{$this->quote} --defaults-extra-file=\"{$this->credentialFile}\" dbname < {$this->quote}dump.sql{$this->quote}", $command);
+    }
+
+    /** @test */
+    public function it_will_make_a_restore_command_with_compression_enabled()
+    {
+        $command = MysqlDumper::create()
+            ->setDbName('dbname')
+            ->setUserName('username')
+            ->setPassword('password')
+            ->useCompress("gunzip")
+            ->setRestorePath('dump.sql.gz')
+            ->getRestoreCommand($this->credentialFile);
+        $this->assertSame("{$this->quote}gunzip{$this->quote} < \"dump.sql.gz\" | {$this->quote}mysql{$this->quote} --defaults-extra-file=\"{$this->credentialFile}\" dbname", $command);
+    }
+
+    /** @test */
+    public function it_will_make_a_restore_command_with_absolute_path()
+    {
+        $command = MysqlDumper::create()
+            ->setDbName('dbname')
+            ->setUserName('username')
+            ->setPassword('password')
+            ->setRestorePath('/path/to/mysql/dump.sql')
+            ->getRestoreCommand($this->credentialFile);
+        $this->assertSame("{$this->quote}mysql{$this->quote} --defaults-extra-file=\"{$this->credentialFile}\" dbname < \"/path/to/mysql/dump.sql\"", $command);
     }
 }

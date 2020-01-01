@@ -11,7 +11,7 @@ class MongoDumper extends Dumper
     /*@var string*/
     protected $collection = "";
     /*@var string*/
-    protected $authenticationDatabase = "admin";
+    protected $authenticationDatabase = "";
     /*@var string*/
     protected $uri = "";
 
@@ -34,7 +34,7 @@ class MongoDumper extends Dumper
 
     public function dump(string $destinationPath = "")
     {
-        $destinationPath = !empty($destinationPath) ? $destinationPath : $this->destinationPath;
+        $destinationPath = !empty($destinationPath) ? '"' . $destinationPath . '"' : '"' . $this->destinationPath . '"';
         $dumpCommand     = $this->prepareDumpCommand($destinationPath);
         $this->command   = $this->removeExtraSpaces($dumpCommand);
         $this->run();
@@ -42,7 +42,7 @@ class MongoDumper extends Dumper
 
     public function restore(string $restorePath = "")
     {
-        $restorePath    = !empty($restorePath) ? $restorePath : $this->restorePath;
+        $restorePath    = !empty($restorePath) ? '"' . $restorePath . '"' : '"' . $this->restorePath . '"';
         $restoreCommand = $this->prepareRestoreCommand($restorePath);
         $this->command  = $this->removeExtraSpaces($restoreCommand);
         $this->run();
@@ -53,11 +53,11 @@ class MongoDumper extends Dumper
         $archive = $this->isCompress ? "--archive --gzip" : "";
 
         $dumpCommand = sprintf(
-            '%smongodump %s %s %s %s %s %s %s %s',
-            $this->commandBinaryPath,
+            '%s %s %s %s %s %s %s %s %s',
+            $this->quoteCommand($this->commandBinaryPath . 'mongodump'),
             $archive,
             $this->prepareDatabase(),
-            $this->prepareUsername(),
+            $this->prepareUserName(),
             $this->preparePassword(),
             $this->prepareHost(),
             $this->preparePort(),
@@ -67,8 +67,8 @@ class MongoDumper extends Dumper
 
         if ($this->uri) {
             $dumpCommand = sprintf(
-                '%smongodump %s --uri %s %s',
-                $this->commandBinaryPath,
+                '%s %s --uri %s %s',
+                $this->quoteCommand($this->commandBinaryPath . 'mongodump'),
                 $archive,
                 $this->uri,
                 $this->prepareCollection()
@@ -76,10 +76,10 @@ class MongoDumper extends Dumper
         }
 
         if ($this->isCompress) {
-            return "{$dumpCommand} > {$destinationPath}{$this->compressExtension}";
+            return "{$dumpCommand} > \"{$destinationPath}{$this->compressExtension}\"";
         }
 
-        return "{$dumpCommand} --out {$destinationPath}";
+        return "{$dumpCommand} --out \"{$destinationPath}\"";
     }
 
     protected function prepareRestoreCommand(string $filePath): string
@@ -87,12 +87,12 @@ class MongoDumper extends Dumper
 
         $archive = $this->isCompress ? "--gzip --archive" : "";
 
-        $restoreCommand = sprintf("%smongorestore %s %s %s %s %s",
-            $this->commandBinaryPath,
+        $restoreCommand = sprintf("%s %s %s %s %s %s",
+            $this->quoteCommand($this->commandBinaryPath . 'mongorestore'),
             $archive,
             $this->prepareHost(),
             $this->preparePort(),
-            $this->prepareUsername(),
+            $this->prepareUserName(),
             $this->prepareAuthenticateDatabase()
         );
 
@@ -106,36 +106,15 @@ class MongoDumper extends Dumper
         }
 
         if ($this->isCompress) {
-
-            return "{$restoreCommand} < {$filePath}";
+            return "{$restoreCommand} < \"{$filePath}\"";
         }
 
-        return "{$restoreCommand} {$filePath}";
-    }
-
-    public function prepareDatabase()
-    {
-        return !empty($this->dbName) ? "--db {$this->dbName}" : "";
-    }
-
-    public function prepareUsername()
-    {
-        return !empty($this->username) ? "--username {$this->username}" : "";
+        return "{$restoreCommand} \"{$filePath}\"";
     }
 
     public function preparePassword()
     {
         return !empty($this->password) ? "--password {$this->password}" : "";
-    }
-
-    public function prepareHost()
-    {
-        return !empty($this->host) ? "--host {$this->host}" : "";
-    }
-
-    public function preparePort()
-    {
-        return !empty($this->port) ? "--port {$this->port}" : "";
     }
 
     public function prepareAuthenticateDatabase()

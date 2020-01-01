@@ -8,7 +8,7 @@ class SqliteDumper extends Dumper
 {
     public function dump(string $destinationPath = "")
     {
-        $destinationPath = !empty($destinationPath) ? $destinationPath : $this->destinationPath;
+        $destinationPath = !empty($destinationPath) ? '"' . $destinationPath . '"' : '"' . $this->destinationPath . '"';
         $dumpCommand     = $this->prepareDumpCommand($destinationPath);
         $this->command   = $this->removeExtraSpaces($dumpCommand);
         $this->run();
@@ -16,7 +16,7 @@ class SqliteDumper extends Dumper
 
     public function restore(string $restorePath = "")
     {
-        $restorePath    = !empty($restorePath) ? $restorePath : $this->restorePath;
+        $restorePath    = !empty($restorePath) ? '"' . $restorePath . '"' : '"' . $this->restorePath . '"';
         $restoreCommand = $this->prepareRestoreCommand($restorePath);
         $this->command  = $this->removeExtraSpaces($restoreCommand);
         $this->run();
@@ -25,30 +25,31 @@ class SqliteDumper extends Dumper
     protected function prepareDumpCommand(string $destinationPath): string
     {
         $dumpCommand = sprintf(
-            "%ssqlite3 %s .dump",
-            $this->commandBinaryPath,
+            "%s %s .dump",
+            $this->quoteCommand($this->commandBinaryPath . 'sqlite3'),
             $this->dbName
         );
 
         if ($this->isCompress) {
-
-            return "{$dumpCommand} | {$this->compressBinaryPath}{$this->compressCommand} > {$destinationPath}{$this->compressExtension}";
+            $compressCommand = $this->quoteCommand("{$this->compressBinaryPath}{$this->compressCommand}");
+            return "{$dumpCommand} | $compressCommand > \"{$destinationPath}{$this->compressExtension}\"";
         }
 
-        return "{$dumpCommand} > {$destinationPath}";
+        return "{$dumpCommand} > \"{$destinationPath}\"";
     }
 
     protected function prepareRestoreCommand(string $filePath): string
     {
-        $restoreCommand = sprintf("%ssqlite3 %s",
-            $this->commandBinaryPath,
+        $restoreCommand = sprintf("%s %s",
+            $this->quoteCommand($this->commandBinaryPath . 'sqlite3'),
             $this->dbName
         );
 
         if ($this->isCompress) {
-            return "{$this->compressBinaryPath}{$this->compressCommand} < {$filePath} | {$restoreCommand}";
+            $compressCommand = $this->quoteCommand("{$this->compressBinaryPath}{$this->compressCommand}");
+            return "$compressCommand < \"{$filePath}\" | {$restoreCommand}";
         }
 
-        return "{$restoreCommand} < {$filePath}";
+        return "{$restoreCommand} < \"{$filePath}\"";
     }
 }

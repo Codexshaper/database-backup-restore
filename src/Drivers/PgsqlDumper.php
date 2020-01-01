@@ -7,7 +7,11 @@ use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class PgsqlDumper extends Dumper
 {
-    protected $useInserts   = false;
+    /*@var int*/
+    protected $port = 5432;
+    /*@var bool*/
+    protected $useInserts = false;
+    /*@var bool*/
     protected $createTables = true;
 
     public function useInserts()
@@ -16,7 +20,7 @@ class PgsqlDumper extends Dumper
         return $this;
     }
 
-    public function doNotUseCreateTables()
+    public function doNotCreateTables()
     {
         $this->createTables = false;
 
@@ -25,7 +29,7 @@ class PgsqlDumper extends Dumper
 
     public function dump(string $destinationPath = "")
     {
-        $destinationPath = !empty($destinationPath) ? $destinationPath : $this->destinationPath;
+        $destinationPath = !empty($destinationPath) ? '"' . $destinationPath . '"' : '"' . $this->destinationPath . '"';
         $dumpCommand     = $this->prepareDumpCommand($destinationPath);
         $this->command   = $this->removeExtraSpaces($dumpCommand);
         $this->runCommand();
@@ -33,7 +37,7 @@ class PgsqlDumper extends Dumper
 
     public function restore(string $restorePath = "")
     {
-        $restorePath    = !empty($restorePath) ? $restorePath : $this->restorePath;
+        $restorePath    = !empty($restorePath) ? '"' . $restorePath . '"' : '"' . $this->restorePath . '"';
         $restoreCommand = $this->prepareRestoreCommand($restorePath);
         $this->command  = $this->removeExtraSpaces($restoreCommand);
         $this->runCommand();
@@ -42,9 +46,9 @@ class PgsqlDumper extends Dumper
     protected function prepareDumpCommand(string $destinationPath): string
     {
         $dumpCommand = sprintf(
-            '%spg_dump -U %s -h %s %s %s %s %s %s %s',
-            $this->commandBinaryPath,
-            $this->prepareUsername(),
+            '%s -U %s -h %s %s %s %s %s %s %s',
+            $this->quoteCommand($this->commandBinaryPath . 'pg_dump'),
+            $this->prepareUserName(),
             $this->prepareHost(),
             $this->preparePort(),
             $this->prepareUseInserts(),
@@ -55,26 +59,28 @@ class PgsqlDumper extends Dumper
         );
 
         if ($this->isCompress) {
-            return "{$dumpCommand} | {$this->compressBinaryPath}{$this->compressCommand} > {$destinationPath}{$this->compressExtension}";
+            $compressCommand = $this->quoteCommand("{$this->compressBinaryPath}{$this->compressCommand}");
+            return "{$dumpCommand} | {$compressCommand} > \"{$destinationPath}{$this->compressExtension}\"";
         }
-        return "{$dumpCommand} > {$destinationPath}";
+        return "{$dumpCommand} > \"{$destinationPath}\"";
     }
 
     protected function prepareRestoreCommand(string $filePath): string
     {
-        $restoreCommand = sprintf("%spsql -U %s -h %s %s %s",
-            $this->commandBinaryPath,
-            $this->prepareUsername(),
+        $restoreCommand = sprintf("%s -U %s -h %s %s %s",
+            $this->quoteCommand($this->commandBinaryPath . 'psql'),
+            $this->prepareUserName(),
             $this->prepareHost(),
             $this->preparePort(),
             $this->prepareDatabase()
         );
 
         if ($this->isCompress) {
-            return "{$this->compressBinaryPath}{$this->compressCommand} < {$filePath} | {$restoreCommand}";
+            $compressCommand = $this->quoteCommand("{$this->compressBinaryPath}{$this->compressCommand}");
+            return "{$compressCommand} < \"{$filePath}\" | {$restoreCommand}";
         }
 
-        return "{$restoreCommand} < {$filePath}";
+        return "{$restoreCommand} < \"{$filePath}\"";
     }
 
     protected function runCommand()
@@ -102,43 +108,8 @@ class PgsqlDumper extends Dumper
         }
     }
 
-    public function prepareDatabase()
-    {
-        return !empty($this->dbName) ? $this->dbName : "";
-    }
-
-    public function prepareUsername()
-    {
-        return !empty($this->username) ? $this->username : "";
-    }
-
-    public function prepareHost()
-    {
-        return ($this->socket !== '') ? $this->socket : $this->host;
-    }
-
-    public function preparePort()
-    {
-        return !empty($this->port) ? '-p ' . $this->port : '';
-    }
-
-    public function prepareIncludeTables()
-    {
-        return (count($this->tables) > 0) ? '-t ' . implode(' -t ', $this->tables) : "";
-    }
-
-    public function prepareIgnoreTables()
-    {
-        return (count($this->ignoreTables) > 0) ? '-T ' . implode(' -T ', $this->ignoreTables) : '';
-    }
-
-    public function prepareCreateTables()
-    {
-        return (!$this->createTables) ? '--data-only' : '';
-    }
-
     public function prepareUseInserts()
     {
-        return (!$this->useInserts) ? '--inserts' : '';
+        return ($this->useInserts) ? '--inserts' : '';
     }
 }
