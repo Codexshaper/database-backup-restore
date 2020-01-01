@@ -232,7 +232,7 @@ class MysqlTest extends TestCase
             ->setPassword('password')
             ->setRestorePath('dump.sql')
             ->getRestoreCommand($this->credentialFile);
-        $this->assertSame("{$this->quote}mysql{$this->quote} --defaults-extra-file=\"{$this->credentialFile}\" dbname < {$this->quote}dump.sql{$this->quote}", $command);
+        $this->assertSame("{$this->quote}mysql{$this->quote} --defaults-extra-file=\"{$this->credentialFile}\" dbname < \"dump.sql{$this->quote}\"", $command);
     }
 
     /** @test */
