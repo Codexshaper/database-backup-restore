@@ -102,10 +102,6 @@ trait DumperTrait
             $tables = [$tables];
         }
 
-        if (!is_array($tables)) {
-            throw new \Exception("You can pass string or array");
-        }
-
         $this->tables = $tables;
 
         return $this;
@@ -123,10 +119,6 @@ trait DumperTrait
 
         if (is_string($tables)) {
             $tables = [$tables];
-        }
-
-        if (!is_array($tables)) {
-            throw new \Exception("You can pass string or array");
         }
 
         $this->ignoreTables = $tables;
@@ -244,7 +236,7 @@ trait DumperTrait
     public function getDumpCommand(string $credentialFile = '', $destinationPath = '')
     {
         $destinationPath = !empty($destinationPath) ? $destinationPath : $this->destinationPath;
-        switch (strtolower($this->getClassName())) {
+        switch (strtolower($this->getDumperClassName())) {
             case 'mysqldumper':
                 $dumpCommand = $this->prepareDumpCommand($credentialFile, $destinationPath);
                 break;
@@ -259,7 +251,7 @@ trait DumperTrait
     public function getRestoreCommand(string $credentialFile = '', string $filePath = '')
     {
         $filePath = !empty($filePath) ? '"' . $filePath : $this->restorePath;
-        switch (strtolower($this->getClassName())) {
+        switch (strtolower($this->getDumperClassName())) {
             case 'mysqldumper':
                 $restoreCommand = $this->prepareRestoreCommand($credentialFile, $filePath);
                 break;
