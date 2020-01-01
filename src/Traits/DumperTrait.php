@@ -277,4 +277,12 @@ trait DumperTrait
     {
         return static::isWindows() ? "\"{$command}\"" : "'{$command}'";
     }
+
+    public function getDumperClassName()
+    {
+        $classWithNamespace = static::class;
+        $partials           = explode("\\", $classWithNamespace);
+        $className          = end($partials);
+        return $className;
+    }
 }

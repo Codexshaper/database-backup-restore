@@ -62,12 +62,15 @@ abstract class Dumper implements DumperContract
 
     public function prepareHost()
     {
-        switch (strtolower($this->getDumperClassName())) {
+        switch (strtolower($this->getClassName())) {
             case 'pgsqldumper':
-                return ($this->socket !== '') ? $this->socket : $this->host;
+                $host = ($this->socket !== '') ? $this->socket : $this->host;
                 break;
             case 'mongodumper';
-                return !empty($this->host) ? "--host {$this->host}" : "";
+                $host = !empty($this->host) ? "--host {$this->host}" : "";
+                break;
+            default:
+                $host = $this->host;
                 break;
         }
         return $host;
@@ -75,93 +78,123 @@ abstract class Dumper implements DumperContract
 
     public function preparePort()
     {
-        switch (strtolower($this->getDumperClassName())) {
+        switch (strtolower($this->getClassName())) {
             case 'pgsqldumper':
-                return !empty($this->port) ? '-p ' . $this->port : '';
+                $port = !empty($this->port) ? '-p ' . $this->port : '';
                 break;
             case 'mongodumper':
-                return !empty($this->port) ? "--port {$this->port}" : "";
+                $port = !empty($this->port) ? "--port {$this->port}" : "";
+                break;
+            default:
+                $port = $this->port;
                 break;
         }
+        return $port;
     }
 
     public function prepareSocket()
     {
-        switch (strtolower($this->getDumperClassName())) {
+        switch (strtolower($this->getClassName())) {
             case 'mysqldumper':
-                return ($this->socket !== '') ? "--socket={$this->socket}" : '';
+                $socket = ($this->socket !== '') ? "--socket={$this->socket}" : '';
+                break;
+            default:
+                $socket = $this->socket;
                 break;
         }
+
+        return $socket;
     }
 
     public function prepareDatabase()
     {
-        switch (strtolower($this->getDumperClassName())) {
+        switch (strtolower($this->getClassName())) {
             case 'mysqldumper':
             case 'pgsqldumper':
-                return !empty($this->dbName) ? $this->dbName : "";
+                $database = !empty($this->dbName) ? $this->dbName : "";
                 break;
             case 'mongodumper';
-                return !empty($this->dbName) ? "--db {$this->dbName}" : "";
+                $database = !empty($this->dbName) ? "--db {$this->dbName}" : "";
+                break;
+            default:
+                $database = $this->dbName;
                 break;
         }
+        return $database;
     }
 
     public function prepareUserName()
     {
-        switch (strtolower($this->getDumperClassName())) {
+        switch (strtolower($this->getClassName())) {
             case 'pgsqldumper':
-                return !empty($this->username) ? $this->username : "";
+                $username = !empty($this->username) ? $this->username : "";
                 break;
             case 'mongodumper';
-                return !empty($this->username) ? "--username {$this->username}" : "";
+                $username = !empty($this->username) ? "--username {$this->username}" : "";
+                break;
+            default:
+                $username = $this->username;
                 break;
         }
+        return $username;
     }
 
     public function prepareIncludeTables()
     {
-        switch (strtolower($this->getDumperClassName())) {
+        switch (strtolower($this->getClassName())) {
             case 'mysqldumper':
-                $includeTables = (count($this->tables) > 0) ? implode(' ', $this->tables) : '';
-                return !empty($includeTables) ? "--tables {$includeTables}" : '';
+                $includeTables    = (count($this->tables) > 0) ? implode(' ', $this->tables) : '';
+                $includeTablesArg = !empty($includeTables) ? "--tables {$includeTables}" : '';
                 break;
             case 'pgsqldumper':
-                return (count($this->tables) > 0) ? '-t ' . implode(' -t ', $this->tables) : "";
+                $includeTablesArg = (count($this->tables) > 0) ? '-t ' . implode(' -t ', $this->tables) : "";
+                break;
+            default:
+                $includeTablesArg = $this->tables;
                 break;
         }
+
+        return $includeTablesArg;
     }
 
     public function prepareIgnoreTables()
     {
-        switch (strtolower($this->getDumperClassName())) {
+        switch (strtolower($this->getClassName())) {
             case 'mysqldumper':
                 $ignoreTablesArgs = [];
                 foreach ($this->ignoreTables as $tableName) {
                     $ignoreTablesArgs[] = "--ignore-table={$this->dbName}.{$tableName}";
                 }
-                return (count($ignoreTablesArgs) > 0) ? implode(' ', $ignoreTablesArgs) : '';
+                $ignoreTablesArg = (count($ignoreTablesArgs) > 0) ? implode(' ', $ignoreTablesArgs) : '';
                 break;
             case 'pgsqldumper';
-                return (count($this->ignoreTables) > 0) ? '-T ' . implode(' -T ', $this->ignoreTables) : '';
+                $ignoreTablesArg = (count($this->ignoreTables) > 0) ? '-T ' . implode(' -T ', $this->ignoreTables) : '';
+                break;
+            default:
+                $ignoreTablesArg = $this->ignoreTables;
                 break;
         }
+
+        return $ignoreTablesArg;
     }
 
     public function prepareCreateTables()
     {
-        switch (strtolower($this->getDumperClassName())) {
+        switch (strtolower($this->getClassName())) {
             case 'mysqldumper':
-                return !$this->createTables ? '--no-create-info' : '';
+                $createTables = !$this->createTables ? '--no-create-info' : '';
                 break;
             case 'pgsqldumper':
-                return (!$this->createTables) ? '--data-only' : '';
+                $createTables = (!$this->createTables) ? '--data-only' : '';
+                break;
+            default:
+                $createTables = $this->createTables;
                 break;
         }
         return $createTables;
     }
 
-    public function getDumperClassName()
+    public function getClassName()
     {
         $classWithNamespace = static::class;
         $partials           = explode("\\", $classWithNamespace);
