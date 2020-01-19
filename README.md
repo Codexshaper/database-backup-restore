@@ -8,6 +8,10 @@ Database Backup &amp; Restore
 
 [Documentation](https://codexshaper.github.io/docs/database-backup-restore/)
 
+## Authors
+
+* **Md Abu Ahsan Basir** - [github](https://github.com/maab16)
+
 # Installation
 ```
 composer require codexshaper/database-backup-restore
@@ -296,12 +300,6 @@ Restore from archive using URI
   ->setCommandBinaryPath($binaryPath) // /path/to/mysql/bin
   ->dump();
 ```
-
-
-
-## Authors
-
-* **Md Abu Ahsan Basir** - [github](https://github.com/maab16)
 
 ## License
 
