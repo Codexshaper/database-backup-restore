@@ -8,12 +8,16 @@ Database Backup &amp; Restore
 
 [Documentation](https://codexshaper.github.io/docs/database-backup-restore/)
 
+## Authors
+
+* **Md Abu Ahsan Basir** - [github](https://github.com/maab16)
+
 # Installation
 ```
 composer require codexshaper/database-backup-restore
 ```
 
-# MySql Dump *(Note: Mustbe installed `mysqldump` in your system)*
+### MySql Dump *(Note: Mustbe installed `mysqldump` in your system)*
 ```
 $options    = [
     'host'            => 'HOST',
@@ -53,7 +57,7 @@ Archive
   ->dump();
 ```
 
-# MySql Restore *(Note: Mustbe installed `mysql` in your system)*
+### MySql Restore *(Note: Mustbe installed `mysql` in your system)*
 
 Restore from without archive
 ```
@@ -70,7 +74,7 @@ Restore from archive
   ->restore();
 ```
 
-# PgSql Dump *(Note: Mustbe installed `pg_dump` in your system)*
+### PgSql Dump *(Note: Mustbe installed `pg_dump` in your system)*
 ```
 $options    = [
     'host'            => 'HOST',
@@ -110,7 +114,7 @@ Archive
   ->dump();
 ```
 
-# PgSql Restore *(Note: Mustbe installed `psql` in your system)*
+### PgSql Restore *(Note: Mustbe installed `psql` in your system)*
 Restore from without archive
 ```
 $dumper = new \CodexShaper\Dumper\Drivers\PgsqlDumper($options);
@@ -126,7 +130,7 @@ Restore from archive
   ->restore();
 ```
 
-# Sqlite Dump *(Note: Mustbe installed `sqlite3` in your system)*
+### Sqlite Dump *(Note: Mustbe installed `sqlite3` in your system)*
 ```
 $options    = [
     'dbName'          => 'DATABASE_PATH', // /path/to/database.sqlite
@@ -158,7 +162,7 @@ Archive
   ->useCompress("gzip") // This command apply gzip to zip
   ->dump();
 ```
-# Sqlite Restore *(Note: Mustbe installed `sqlite3` in your system)*
+### Sqlite Restore *(Note: Mustbe installed `sqlite3` in your system)*
 ```
 $options    = [
     'dbName'          => 'DATABASE_PATH', // /path/to/database.sqlite
@@ -186,7 +190,7 @@ Restore From Archive
   ->restore();
 ```
 
-# MongoDB Dump *(Note: Mustbe installed `mongodump` in your system)*
+### MongoDB Dump *(Note: Mustbe installed `mongodump` in your system)*
 
 ```
 $options    = [
@@ -227,7 +231,7 @@ Archive
   ->useCompress("gzip") // This command will add --archive with --gzip
   ->dump();
 ```
-## Use URI
+#### Use URI
 ```
 $options = [
     'uri'             => $uri,
@@ -257,7 +261,7 @@ Compress
   ->dump();
 ```
 
-# MongoDB Restore *(Note: Mustbe installed `mongorestore` in your system)*
+### MongoDB Restore *(Note: Mustbe installed `mongorestore` in your system)*
 
 Restore from without archive
 ```
@@ -289,19 +293,13 @@ Restore from archive using URI
   ->restore();
 ```
 
-# Set Dump Binary Path
+### Set Dump Binary Path
 ```
 // Same for other driver
 \CodexShaper\Dumper\Drivers\MysqlDumper::create($options)
   ->setCommandBinaryPath($binaryPath) // /path/to/mysql/bin
   ->dump();
 ```
-
-
-
-## Authors
-
-* **Md Abu Ahsan Basir** - [github](https://github.com/maab16)
 
 ## License
 
