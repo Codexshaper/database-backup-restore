@@ -1,0 +1,5 @@
+{
+    "require": {
+        "codexshaper/database-backup-restore": "^1.1"
+    }
+}
